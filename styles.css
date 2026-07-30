@@ -435,6 +435,105 @@ button:hover {
   display: none;
 }
 
+.loading-status {
+  position: fixed;
+  z-index: 7;
+  right: 14px;
+  top: 14px;
+  color: rgba(225, 249, 252, 0.78);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.gesture-guide {
+  position: fixed;
+  top: 92px;
+  left: 50%;
+  display: flex;
+  gap: 28px;
+  transform: translateX(-50%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gesture-guide[hidden] {
+  display: none;
+}
+
+.gesture-guide span {
+  width: 34px;
+  height: 42px;
+  border: 1.5px solid rgba(206, 247, 255, 0.8);
+  border-radius: 45% 45% 48% 48%;
+  box-shadow: 0 0 18px rgba(130, 232, 255, 0.2);
+}
+
+.gesture-guide[data-state="wait_fist"] span {
+  animation: fistGuide 1.4s ease-in-out infinite alternate;
+}
+
+.gesture-guide[data-state="finger_bubbles"] span {
+  border-radius: 45% 45% 34% 34%;
+  animation: fingerGuide 1.2s ease-in-out infinite alternate;
+}
+
+.gesture-guide[data-state="palm_trail"] {
+  animation: palmGuide 1.8s ease-in-out infinite;
+}
+
+@keyframes fistGuide {
+  to { transform: scale(0.72); border-radius: 50%; }
+}
+
+@keyframes fingerGuide {
+  to { transform: translateY(-10px) scaleY(1.2); }
+}
+
+@keyframes palmGuide {
+  50% { transform: translateX(calc(-50% + 36px)); }
+}
+
+.round-result {
+  position: fixed;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  width: min(430px, calc(100vw - 28px));
+  padding: 24px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 243, 190, 0.35);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(7, 15, 24, 0.88);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(22px);
+}
+
+.round-result[hidden] {
+  display: none;
+}
+
+.result-kicker {
+  color: #fff0aa;
+  font-size: 11px;
+}
+
+.round-result h2 {
+  margin: 7px 0 10px;
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.round-result p {
+  line-height: 1.6;
+}
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
 @media (max-width: 900px) {
   .controls {
     max-width: calc(100vw - 20px);

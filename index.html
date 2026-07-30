@@ -24,6 +24,9 @@
           <h1 id="stagePrompt">请允许摄像头权限</h1>
           <p id="debugInfo">所有识别与渲染都在浏览器本地完成。</p>
         </div>
+        <div id="gestureGuide" class="gesture-guide" data-state="wait_fist" aria-hidden="true">
+          <span></span><span></span>
+        </div>
 
         <div class="controls" aria-label="游戏控制面板">
           <div id="mixerSettings" class="mixer-settings" hidden>
@@ -81,6 +84,7 @@
       </section>
 
       <div id="performanceHint" class="performance-hint" hidden></div>
+      <div id="loadingStatus" class="loading-status" hidden></div>
       <div id="errorPanel" class="error-panel" hidden>
         <p id="errorMessage"></p>
         <div class="error-actions">
@@ -88,6 +92,15 @@
           <button id="errorTouchButton" type="button">进入触控模式</button>
         </div>
       </div>
+      <section id="roundResult" class="round-result" hidden aria-live="polite">
+        <span class="result-kicker">本轮压力处方</span>
+        <h2 id="resultHeadline"></h2>
+        <p id="resultDetail"></p>
+        <div class="result-actions">
+          <button id="shareResult" type="button">分享结果</button>
+          <button id="nextRound" type="button">下一轮</button>
+        </div>
+      </section>
     </main>
 
     <script src="./assets/vendor/mediapipe/hands/hands.js"></script>

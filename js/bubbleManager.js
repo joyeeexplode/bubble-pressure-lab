@@ -2,6 +2,8 @@ import * as THREE from "../assets/vendor/three/three.module.js";
 import { ITEM_CATALOG, THEME_POOLS, TOY_ITEM_TYPES } from "./itemCatalog.js";
 import { NATURAL_RELEASE_PROFILES } from "./naturalReleaseProfiles.js";
 import { CRUSHABLE_EFFECTS } from "./crushableCatalog.js";
+import { createBubbleMaterial, pickBubbleStyle } from "./bubbleMaterial.js";
+import { TextureCache } from "./textureCache.js";
 import {
   buildDynamicWeights,
   buildTrailReuseWeights,
@@ -24,7 +26,7 @@ const SIGNATURE_RELEASES = {
 };
 
 export class BubbleManager {
-  constructor(canvas, performanceProfile) {
+  constructor(canvas, performanceProfile, { onTextureProgress } = {}) {
     this.canvas = canvas;
     this.performanceProfile = performanceProfile;
     this.maxAliveItems = performanceProfile.id === "high" ? 150 : performanceProfile.id === "balanced" ? 84 : 56;
@@ -42,10 +44,7 @@ export class BubbleManager {
     this.renderer.setClearColor(0x000000, 0);
     this.bubbles = new Map();
     this.nextId = 1;
-    this.textureCache = new Map();
-    this.textureLoader = new THREE.TextureLoader();
-    this.idleTextureQueue = [];
-    this.idlePreloadScheduled = false;
+    this.textures = new TextureCache(THREE, ITEM_CATALOG, { onProgress: onTextureProgress });
     this.roundFingerDraws = [];
     this.recentItemTypes = [];
     this.recentMaterials = [];
@@ -91,147 +90,11 @@ export class BubbleManager {
     return Math.max(minimum, Math.ceil(count * this.particleScale));
   }
 
-  makeBubbleTexture(rainbow = false) {
-    const key = rainbow ? "rainbow" : "clear";
-    if (this.textureCache.has(key)) return this.textureCache.get(key);
-
-    const size = 256;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    const c = size / 2;
-
-    ctx.clearRect(0, 0, size, size);
-
-    const film = ctx.createRadialGradient(c * 0.7, c * 0.66, size * 0.08, c, c, size * 0.48);
-    film.addColorStop(0, "rgba(255,255,255,0.32)");
-    film.addColorStop(0.55, "rgba(177,242,255,0.10)");
-    film.addColorStop(0.78, "rgba(255,255,255,0.20)");
-    film.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = film;
-    ctx.beginPath();
-    ctx.arc(c, c, size * 0.47, 0, Math.PI * 2);
-    ctx.fill();
-
-    const edge = ctx.createRadialGradient(c, c, size * 0.38, c, c, size * 0.49);
-    edge.addColorStop(0, "rgba(255,255,255,0)");
-    edge.addColorStop(0.78, "rgba(210,252,255,0.58)");
-    edge.addColorStop(1, "rgba(255,255,255,0.98)");
-    ctx.strokeStyle = edge;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(c, c, size * 0.45, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.72)";
-    ctx.lineWidth = 8;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.arc(c, c, size * 0.32, Math.PI * 1.05, Math.PI * 1.42);
-    ctx.stroke();
-
-    ctx.fillStyle = "rgba(255,255,255,0.82)";
-    ctx.beginPath();
-    ctx.ellipse(size * 0.36, size * 0.32, size * 0.06, size * 0.025, -0.6, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (rainbow) {
-      const arcs = [
-        ["rgba(255,132,205,0.55)", 0.4],
-        ["rgba(134,228,255,0.5)", 0.48],
-        ["rgba(255,246,151,0.45)", 0.56],
-      ];
-      arcs.forEach(([color, r], i) => {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(c, c, size * r, Math.PI * (0.1 + i * 0.035), Math.PI * (0.44 + i * 0.025));
-        ctx.stroke();
-      });
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.needsUpdate = true;
-    this.textureCache.set(key, texture);
-    return texture;
-  }
-
   addBubble({ x, y, radius = 42, opacity = 0.55, attachedFinger = null, color = null }) {
     const id = this.nextId++;
     const group = new THREE.Group();
-    const styleRoll = Math.random();
-    const bubbleStyle = styleRoll < 0.34 ? 0 : styleRoll < 0.62 ? 1 : styleRoll < 0.82 ? 2 : 3;
-    const material = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      uniforms: {
-        uOpacity: { value: Math.max(0.32, Math.min(0.72, opacity)) },
-        uTime: { value: Math.random() * 20 },
-        uHue: { value: Math.random() },
-        uStyle: { value: bubbleStyle },
-        uSeed: { value: Math.random() * 12 },
-      },
-      vertexShader: `
-        uniform float uTime;
-        varying vec3 vNormal;
-        void main() {
-          vec3 p = position;
-          float wobble = sin(uTime * 2.1 + position.y * 0.12 + position.x * 0.09) * 0.012;
-          p += normal * wobble;
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-        }
-      `,
-      fragmentShader: `
-        precision highp float;
-        varying vec3 vNormal;
-        uniform float uOpacity;
-        uniform float uTime;
-        uniform float uHue;
-        uniform float uStyle;
-        uniform float uSeed;
-
-        void main() {
-          vec3 n = normalize(vNormal);
-          float facing = clamp(abs(n.z), 0.0, 1.0);
-          float fresnel = pow(1.0 - facing, 2.15);
-          float film = sin(n.y * 13.0 + n.x * 7.0 + fresnel * 19.0 + uTime * 0.5 + uSeed);
-          float hue = fract(uHue + fresnel * 0.56 + n.x * 0.15 + n.y * 0.09 + film * 0.055);
-          vec3 spectrum = 0.58 + 0.42 * cos(6.28318 * (hue + vec3(0.0, 0.33, 0.67)));
-          vec3 color = vec3(0.8, 0.96, 1.0);
-          float centerHaze = 0.0;
-          float rimBoost = 0.0;
-
-          if (uStyle < 0.5) {
-            color = mix(color, spectrum, 0.07 + fresnel * 0.2);
-            rimBoost = fresnel * 0.22;
-          } else if (uStyle < 1.5) {
-            float oilBand = 0.5 + 0.5 * film;
-            color = mix(color, spectrum, 0.22 + fresnel * 0.62 + oilBand * 0.12);
-            rimBoost = fresnel * 0.3;
-          } else if (uStyle < 2.5) {
-            vec3 pearl = mix(vec3(0.75, 0.92, 1.0), vec3(1.0, 0.74, 0.9), 0.5 + 0.5 * n.y);
-            color = mix(pearl, spectrum, 0.12 + fresnel * 0.28);
-            centerHaze = facing * 0.13;
-          } else {
-            float crescent = smoothstep(-0.12, 0.7, n.x * 0.75 - n.y * 0.28 + fresnel);
-            color = mix(color, spectrum, 0.12 + crescent * 0.5 + fresnel * 0.28);
-            rimBoost = fresnel * (0.18 + crescent * 0.2);
-          }
-
-          float highlight = pow(max(dot(n, normalize(vec3(-0.48, 0.62, 0.72))), 0.0), 72.0);
-          float secondary = pow(max(dot(n, normalize(vec3(0.55, -0.3, 0.78))), 0.0), 110.0);
-          float windowLight = pow(max(dot(n, normalize(vec3(-0.24, 0.78, 0.58))), 0.0), 145.0);
-          color += vec3(1.0) * (highlight * 0.92 + secondary * 0.52 + windowLight * 0.7);
-          float alpha = uOpacity * (0.035 + fresnel * 0.68 + centerHaze + rimBoost)
-            + highlight * 0.76 + secondary * 0.38 + windowLight * 0.5;
-          gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.92));
-        }
-      `,
-    });
+    const bubbleStyle = pickBubbleStyle();
+    const material = createBubbleMaterial(THREE, { opacity, style: bubbleStyle });
     const membrane = new THREE.Mesh(
       new THREE.SphereGeometry(radius, 32, 24),
       material,
@@ -270,55 +133,11 @@ export class BubbleManager {
   }
 
   getItemTexture(path) {
-    if (this.textureCache.has(path)) return this.textureCache.get(path);
-    const texture = this.textureLoader.load(path, undefined, undefined, () => {
-      const fallback = this.makeBubbleTexture(false);
-      texture.image = fallback.image;
-      texture.needsUpdate = true;
-    });
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    this.textureCache.set(path, texture);
-    return texture;
+    return this.textures.get(path);
   }
 
   preloadThemeAssets(theme = this.currentTheme) {
-    const immediateTypes = theme?.items ?? [];
-    for (const type of immediateTypes) {
-      const definition = ITEM_CATALOG[type];
-      if (definition?.asset) this.getItemTexture(definition.asset);
-      if (definition?.particleAsset) this.getItemTexture(definition.particleAsset);
-    }
-    if (this.idlePreloadScheduled) return;
-    this.idlePreloadScheduled = true;
-    const immediate = new Set(immediateTypes);
-    this.idleTextureQueue = Object.entries(ITEM_CATALOG)
-      .filter(([type]) => !immediate.has(type))
-      .flatMap(([, definition]) => [definition.asset, definition.particleAsset])
-      .filter(Boolean);
-    this.scheduleIdleTextureBatch();
-  }
-
-  scheduleIdleTextureBatch() {
-    if (!this.idleTextureQueue.length) return;
-    const loadBatch = (deadline) => {
-      let loaded = 0;
-      while (
-        this.idleTextureQueue.length
-        && loaded < 3
-        && (deadline.didTimeout || deadline.timeRemaining() > 4)
-      ) {
-        this.getItemTexture(this.idleTextureQueue.shift());
-        loaded += 1;
-      }
-      if (this.idleTextureQueue.length) this.scheduleIdleTextureBatch();
-    };
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(loadBatch, { timeout: 1800 });
-    } else {
-      window.setTimeout(() => loadBatch({ didTimeout: true, timeRemaining: () => 0 }), 240);
-    }
+    this.textures.preloadTheme(theme);
   }
 
   getMaterialCounts() {
@@ -2003,6 +1822,10 @@ export class BubbleManager {
 
   aliveCount() {
     return [...this.bubbles.values()].filter((b) => b.state === "alive").length;
+  }
+
+  getRemainingType() {
+    return [...this.bubbles.values()].find((bubble) => bubble.state === "alive")?.type ?? "bubble";
   }
 
   coverageRatio() {

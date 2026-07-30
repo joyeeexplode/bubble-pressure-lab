@@ -5,6 +5,7 @@ import { BubbleManager } from "./bubbleManager.js";
 import { AudioManager } from "./audioManager.js";
 import { UIControls } from "./uiControls.js";
 import { detectPerformanceProfile, detectWebGL } from "./performanceProfile.js";
+import { createRoundResult } from "./roundResults.js";
 import {
   GameStateMachine,
   PROMPTS,
@@ -38,6 +39,9 @@ let booting = false;
 let animationFrameId = 0;
 let lastRenderAt = 0;
 let hiddenCleanupTimer = 0;
+let roundPoppedCount = 0;
+let lastPoppedType = "bubble";
+let roundResultOpen = false;
 const seenExtendedFingers = new Set();
 
 const ui = new UIControls({
@@ -70,16 +74,19 @@ const ui = new UIControls({
   onPrimaryStart: () => startHandMode(),
   onRetry: () => startHandMode(),
   onErrorTouch: () => activateTouchMode(),
+  onNextRound: () => continueRound(),
 });
 
 const machine = new GameStateMachine((state) => {
   ui.setPrompt(PROMPTS[state]);
+  ui.setGestureGuide(state);
   if (state === STATES.WAIT_FIST) {
     seenExtendedFingers.clear();
     motion.reset();
     bubbles.resetRoundDraws();
   }
   if (state === STATES.RESET) {
+    ui.hideRoundResult();
     bubbles.clear();
     setTimeout(() => {
       if (touchMode) startTouchRound();
@@ -90,11 +97,20 @@ const machine = new GameStateMachine((state) => {
     pinchRoundStartCount = Math.max(1, bubbles.aliveCount());
     clearCelebrated = false;
     combo = 0;
+    roundPoppedCount = 0;
+    lastPoppedType = "bubble";
   }
 });
 
+function continueRound() {
+  roundResultOpen = false;
+  machine.set(STATES.RESET);
+}
+
 function startTouchRound() {
   if (!bubbles) return;
+  roundResultOpen = false;
+  ui.hideRoundResult();
   bubbles.clear();
   bubbles.resetRoundDraws();
   seenExtendedFingers.clear();
@@ -112,6 +128,8 @@ function handlePopped(popped, now) {
   if (!popped.length) return;
   combo = now - lastSuccessfulPopAt < 850 ? combo + popped.length : popped.length;
   lastSuccessfulPopAt = now;
+  roundPoppedCount += popped.length;
+  lastPoppedType = popped.at(-1)?.type ?? lastPoppedType;
   ui.showCombo(combo, popped.length);
   [...new Set(popped.map((item) => item.audioProfile ?? item.type))].slice(0, 3).forEach((type, index) => {
     window.setTimeout(() => audio.pop(type), index * 35);
@@ -162,7 +180,7 @@ window.addEventListener("pageshow", (event) => {
 });
 
 function processState() {
-  if (!bubbles || paused) return;
+  if (!bubbles || paused || roundResultOpen) return;
   const now = performance.now();
   const settings = ui.values;
 
@@ -244,7 +262,13 @@ function processState() {
           bubbles.celebrateClear();
           audio.complete();
           ui.showCombo(combo, 0, true);
-          window.setTimeout(() => machine.set(STATES.RESET), 850);
+          roundResultOpen = true;
+          const remainingType = bubbles.getRemainingType();
+          ui.showRoundResult(createRoundResult({
+            poppedCount: roundPoppedCount,
+            remainingType: remainingType === "bubble" ? lastPoppedType : remainingType,
+            themeLabel: bubbles.getCurrentThemeLabel(),
+          }));
         }
       }
       break;
@@ -290,7 +314,9 @@ function initializeRenderer() {
 
   performanceProfile = detectPerformanceProfile(webgl, window);
   try {
-    bubbles = new BubbleManager(canvas, performanceProfile);
+    bubbles = new BubbleManager(canvas, performanceProfile, {
+      onTextureProgress: (progress) => ui.setTextureProgress(progress),
+    });
   } catch (error) {
     ui.setPrompt("图形初始化失败");
     ui.showError(`WebGL 初始化失败：${error.message || "无法创建渲染器"}`, {
@@ -357,6 +383,8 @@ async function startHandMode() {
   if (booting || !initializeRenderer()) return false;
   booting = true;
   try {
+    roundResultOpen = false;
+    ui.hideRoundResult();
     await stopCameraSession();
     touchMode = false;
     ui.setTouchMode(false);
