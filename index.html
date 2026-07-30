@@ -13,8 +13,9 @@
       <canvas id="threeCanvas" class="three-canvas"></canvas>
       <div id="pinchCursor" class="pinch-cursor" aria-hidden="true"></div>
       <div id="audioGate" class="audio-gate">
-        <button id="audioGateButton" type="button">开启声音并进入</button>
-        <span id="audioStatus">浏览器需要一次点击才能播放音乐和破裂音效</span>
+        <button id="audioGateButton" type="button">允许摄像头，开始解压</button>
+        <button id="touchStartButton" type="button" class="secondary-start">直接触控游玩</button>
+        <span id="audioStatus">也可以直接选择下方的触控模式</span>
       </div>
 
       <section class="hud" aria-live="polite">
@@ -46,23 +47,40 @@
             <input id="popVolume" type="range" min="0" max="1" step="0.01" value="0.78" />
           </label>
           <div class="mixer-actions">
-            <button id="touchToggle" type="button" title="触控模式" aria-label="触控模式"><span aria-hidden="true">✦</span></button>
-            <button id="switchMusic" type="button" title="切换音乐" aria-label="切换音乐"><span aria-hidden="true">♫</span></button>
-            <button id="soundToggle" type="button" class="sound-toggle" title="开启声音" aria-label="开启声音"><span aria-hidden="true">◉</span></button>
-            <button id="pauseToggle" type="button" title="暂停" aria-label="暂停"><span aria-hidden="true">Ⅱ</span></button>
+            <button id="touchToggle" type="button" title="触控模式" aria-label="触控模式">
+              <span aria-hidden="true">✦</span>
+            </button>
+            <button id="switchMusic" type="button" title="切换音乐" aria-label="切换音乐">
+              <span aria-hidden="true">♫</span>
+            </button>
+            <button
+              id="soundToggle"
+              type="button"
+              class="sound-toggle"
+              title="开启声音"
+              aria-label="开启声音"
+            >
+              <span aria-hidden="true">◉</span>
+            </button>
+            <button id="pauseToggle" type="button" title="暂停" aria-label="暂停">
+              <span aria-hidden="true">Ⅱ</span>
+            </button>
           </div>
         </div>
       </section>
 
-      <div id="errorPanel" class="error-panel" hidden></div>
+      <div id="performanceHint" class="performance-hint" hidden></div>
+      <div id="errorPanel" class="error-panel" hidden>
+        <p id="errorMessage"></p>
+        <div class="error-actions">
+          <button id="retryButton" type="button">重试手势模式</button>
+          <button id="errorTouchButton" type="button">进入触控模式</button>
+        </div>
+      </div>
     </main>
 
-    <script
-      src="./assets/vendor/mediapipe/hands/hands.js"
-    ></script>
-    <script
-      src="./assets/vendor/mediapipe/camera_utils/camera_utils.js"
-    ></script>
-    <script type="module" src="./js/main.js?v=20260730-2"></script>
+    <script src="./assets/vendor/mediapipe/hands/hands.js"></script>
+    <script src="./assets/vendor/mediapipe/camera_utils/camera_utils.js"></script>
+    <script type="module" src="./js/main.js?v=20260730-3"></script>
   </body>
 </html>

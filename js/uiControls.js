@@ -1,21 +1,40 @@
 export class UIControls {
-  constructor({ onPause, onMusicSwitch, onAudioGesture, onSoundToggle, onTouchMode }) {
-    this.values = {
+  constructor({
+    onPause,
+    onMusicSwitch,
+    onAudioGesture,
+    onSoundToggle,
+    onTouchMode,
+    onPrimaryStart,
+    onRetry,
+    onErrorTouch,
+  }) {
+    const defaults = {
       bubbleSize: 1.44,
       bubbleOpacity: 0.55,
       musicVolume: 0.38,
       popVolume: 0.78,
       paused: false,
     };
+    try {
+      this.values = { ...defaults, ...JSON.parse(localStorage.getItem("bubble-settings") ?? "{}") };
+    } catch {
+      this.values = defaults;
+    }
 
     this.prompt = document.querySelector("#stagePrompt");
     this.debug = document.querySelector("#debugInfo");
     this.error = document.querySelector("#errorPanel");
+    this.errorMessage = document.querySelector("#errorMessage");
+    this.retryButton = document.querySelector("#retryButton");
+    this.errorTouchButton = document.querySelector("#errorTouchButton");
+    this.performanceHint = document.querySelector("#performanceHint");
     this.pauseBtn = document.querySelector("#pauseToggle");
     this.soundBtn = document.querySelector("#soundToggle");
     this.touchBtn = document.querySelector("#touchToggle");
     this.audioGate = document.querySelector("#audioGate");
     this.audioGateButton = document.querySelector("#audioGateButton");
+    this.touchStartButton = document.querySelector("#touchStartButton");
     this.audioStatus = document.querySelector("#audioStatus");
     this.cursor = document.querySelector("#pinchCursor");
     this.sceneStatus = document.querySelector("#sceneStatus");
@@ -26,8 +45,19 @@ export class UIControls {
 
     const bindRange = (id, key) => {
       const el = document.querySelector(`#${id}`);
+      el.value = this.values[key];
       el.addEventListener("input", () => {
         this.values[key] = Number(el.value);
+        try {
+          localStorage.setItem("bubble-settings", JSON.stringify({
+            bubbleSize: this.values.bubbleSize,
+            bubbleOpacity: this.values.bubbleOpacity,
+            musicVolume: this.values.musicVolume,
+            popVolume: this.values.popVolume,
+          }));
+        } catch {
+          // Settings persistence is optional in restricted browsing modes.
+        }
         onAudioGesture?.();
       });
     };
@@ -54,15 +84,13 @@ export class UIControls {
 
     this.audioGateButton.addEventListener("click", async () => {
       this.audioGateButton.disabled = true;
-      this.audioStatus.textContent = "正在解锁声音…";
+      this.audioStatus.textContent = "正在启动摄像头与声音…";
       try {
         const enabled = await onAudioGesture?.();
         this.setSoundEnabled(enabled);
-        this.audioStatus.textContent = enabled
-          ? "声音已开启：应能听到提示音和背景节拍"
-          : "声音开启失败，请检查标签页是否静音";
+        await onPrimaryStart?.();
       } catch (error) {
-        this.audioStatus.textContent = `声音开启失败：${error.message}`;
+        this.audioStatus.textContent = `启动失败：${error.message}`;
       } finally {
         this.audioGateButton.disabled = false;
       }
@@ -80,6 +108,11 @@ export class UIControls {
       const enabled = await onTouchMode?.();
       this.setTouchMode(enabled);
     });
+
+    this.touchStartButton.addEventListener("click", () => onErrorTouch?.());
+
+    this.retryButton.addEventListener("click", () => onRetry?.());
+    this.errorTouchButton.addEventListener("click", () => onErrorTouch?.());
   }
 
   setPrompt(text) {
@@ -106,14 +139,31 @@ export class UIControls {
     }
   }
 
-  showError(message) {
+  showError(message, { retry = true, touch = true } = {}) {
     this.error.hidden = false;
-    this.error.textContent = message;
+    this.errorMessage.textContent = message;
+    this.retryButton.hidden = !retry;
+    this.errorTouchButton.hidden = !touch;
   }
 
   clearError() {
     this.error.hidden = true;
-    this.error.textContent = "";
+    this.errorMessage.textContent = "";
+  }
+
+  showPerformanceHint(text) {
+    if (!this.performanceHint) return;
+    this.performanceHint.textContent = text;
+    this.performanceHint.hidden = false;
+    window.clearTimeout(this.performanceHintTimer);
+    this.performanceHintTimer = window.setTimeout(() => {
+      this.performanceHint.hidden = true;
+    }, 4200);
+  }
+
+  dismissStartGate() {
+    this.started = true;
+    this.audioGate.classList.add("hidden");
   }
 
   setSoundEnabled(enabled) {
@@ -124,7 +174,7 @@ export class UIControls {
     this.soundBtn.setAttribute("aria-pressed", String(enabled));
     if (enabled) {
       this.audioGate.classList.add("hidden");
-    } else {
+    } else if (!this.started) {
       this.audioGate.classList.remove("hidden");
       this.audioStatus.textContent = "声音已关闭，点击按钮重新开启";
     }

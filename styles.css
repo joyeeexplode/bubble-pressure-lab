@@ -172,6 +172,11 @@ body,
   background: rgba(115, 220, 236, 0.22);
 }
 
+.audio-gate .secondary-start {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .combo-toast {
   position: fixed;
   z-index: 6;
@@ -388,6 +393,37 @@ button:hover {
   background: var(--glass-strong);
 }
 
+.error-panel p {
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.5;
+}
+
+.error-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.performance-hint {
+  position: fixed;
+  z-index: 7;
+  top: 104px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  border: 1px solid rgba(167, 243, 255, 0.32);
+  border-radius: 6px;
+  color: rgba(238, 253, 255, 0.92);
+  background: rgba(7, 15, 24, 0.72);
+  font-size: 12px;
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+}
+
+.performance-hint[hidden] {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .controls {
     width: calc(100vw - 20px);
@@ -418,14 +454,23 @@ button:hover {
     display: none;
   }
 
-  button {
-    padding: 10px 12px;
-  }
-
   .audio-gate {
     right: 10px;
-    bottom: 94px;
+    bottom: 92px;
     left: 10px;
+    flex-wrap: wrap;
+  }
+
+  .audio-gate button {
+    flex: 1 1 150px;
+  }
+
+  .audio-gate span {
+    width: 100%;
+  }
+
+  button {
+    padding: 10px 12px;
   }
 
   .mixer-status {

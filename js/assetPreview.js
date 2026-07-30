@@ -4,12 +4,15 @@ const grid = document.querySelector("#assetGrid");
 const template = document.querySelector("#assetCardTemplate");
 const status = document.querySelector("#previewStatus");
 const camera = document.querySelector("#previewCamera");
+const assetVersion = "20260730-candy1";
 
 for (const type of TOY_ITEM_TYPES) {
   const definition = ITEM_CATALOG[type];
   const card = template.content.firstElementChild.cloneNode(true);
   const image = card.querySelector("img");
-  image.src = definition.asset;
+  const imageUrl = new URL(definition.asset, window.location.href);
+  imageUrl.searchParams.set("v", assetVersion);
+  image.src = imageUrl.href;
   image.alt = `${type} 透明资产`;
   card.querySelector("strong").textContent = type;
   card.querySelector(".material").textContent = definition.materialFamily;

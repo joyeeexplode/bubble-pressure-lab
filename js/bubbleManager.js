@@ -24,14 +24,21 @@ const SIGNATURE_RELEASES = {
 };
 
 export class BubbleManager {
-  constructor(canvas) {
+  constructor(canvas, performanceProfile) {
     this.canvas = canvas;
+    this.performanceProfile = performanceProfile;
+    this.maxAliveItems = performanceProfile.id === "high" ? 150 : performanceProfile.id === "balanced" ? 84 : 56;
     this.scene = new THREE.Scene();
     this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -1000, 1000);
     this.camera.position.z = 100;
     this.camera.lookAt(0, 0, 0);
-    this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: performanceProfile.id === "high",
+      powerPreference: performanceProfile.id === "low" ? "low-power" : "high-performance",
+    });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, performanceProfile.pixelRatio));
     this.renderer.setClearColor(0x000000, 0);
     this.bubbles = new Map();
     this.nextId = 1;
@@ -47,7 +54,9 @@ export class BubbleManager {
     this.drawsSinceCyber = 12;
     this.currentRoundHadCyber = false;
     this.currentTheme = THEME_POOLS[0];
-    this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      || performanceProfile.id === "low";
+    this.particleScale = performanceProfile.particleScale;
     this.atmosphereLayer = document.querySelector("#atmosphereLayer");
     this.releaseEnergy = 0;
     this.weatherMix = 0;
@@ -74,6 +83,10 @@ export class BubbleManager {
     this.camera.top = 0;
     this.camera.bottom = h;
     this.camera.updateProjectionMatrix();
+  }
+
+  scaleEffectCount(count, minimum = 1) {
+    return Math.max(minimum, Math.ceil(count * this.particleScale));
   }
 
   makeBubbleTexture(rainbow = false) {
@@ -509,7 +522,7 @@ export class BubbleManager {
   }
 
   addTrail(from, to, settings, amount = 5) {
-    if (this.aliveCount() >= 150) return;
+    if (this.aliveCount() >= this.maxAliveItems) return;
     for (let i = 0; i < amount; i += 1) {
       const t = amount === 1 ? 1 : i / (amount - 1);
       const softSpread = 58;
@@ -580,7 +593,7 @@ export class BubbleManager {
   seedTouchField(settings, amount = 28) {
     const top = Math.max(92, window.innerHeight * 0.12);
     const bottom = Math.max(top + 180, window.innerHeight - 118);
-    for (let index = 0; index < amount && this.aliveCount() < 90; index += 1) {
+    for (let index = 0; index < amount && this.aliveCount() < this.maxAliveItems; index += 1) {
       const target = {
         x: 36 + Math.random() * Math.max(1, window.innerWidth - 72),
         y: top + Math.random() * Math.max(1, bottom - top),
@@ -844,7 +857,9 @@ export class BubbleManager {
   }
 
   spawnChainSpark(target, color, strength, cyber = false) {
-    const count = this.reducedMotion ? 1 : Math.max(2, Math.round(2 + strength * 4));
+    const count = this.reducedMotion
+      ? 1
+      : this.scaleEffectCount(Math.max(2, Math.round(2 + strength * 4)), 2);
     for (let i = 0; i < count; i += 1) {
       const geometry = cyber
         ? new THREE.BoxGeometry(3 + Math.random() * 5, 1.2 + Math.random() * 2.4, 1)
@@ -945,7 +960,9 @@ export class BubbleManager {
     const config = { ...baseConfig, color: typeColors[bubble.type] ?? baseConfig.color };
 
     const rhythmCount = Math.round(config.count * THREE.MathUtils.lerp(0.72, 1.35, this.interactionEnergy));
-    const particleCount = this.reducedMotion ? Math.max(5, Math.ceil(rhythmCount * 0.4)) : rhythmCount;
+    const particleCount = this.reducedMotion
+      ? Math.max(5, Math.ceil(rhythmCount * 0.4))
+      : this.scaleEffectCount(rhythmCount, 5);
     for (let i = 0; i < particleCount; i += 1) {
       const size = config.size[0] + Math.random() * (config.size[1] - config.size[0]);
       const geometry =
@@ -1117,7 +1134,7 @@ export class BubbleManager {
     };
     const count = this.reducedMotion
       ? Math.max(5, Math.ceil(countByBehavior[profile.behavior] * 0.5))
-      : countByBehavior[profile.behavior];
+      : this.scaleEffectCount(countByBehavior[profile.behavior], 5);
     for (let i = 0; i < count; i += 1) {
       const progress = count === 1 ? 0 : i / (count - 1);
       let geometry;
@@ -1213,7 +1230,9 @@ export class BubbleManager {
       };
       this.scene.add(ring);
     }
-    const count = this.reducedMotion ? Math.ceil(accents.motes * 0.45) : accents.motes;
+    const count = this.reducedMotion
+      ? Math.ceil(accents.motes * 0.45)
+      : this.scaleEffectCount(accents.motes, 4);
     for (let i = 0; i < count; i += 1) {
       const mote = new THREE.Mesh(
         new THREE.SphereGeometry(1.2 + Math.random() * 2.6, 8, 5),
@@ -1243,7 +1262,7 @@ export class BubbleManager {
   }
 
   spawnDaisyPollen(bubble) {
-    const count = this.reducedMotion ? 22 : 54;
+    const count = this.reducedMotion ? 22 : this.scaleEffectCount(54, 22);
     for (let i = 0; i < count; i += 1) {
       const size = 1.4 + Math.random() * 3.2;
       const dot = new THREE.Mesh(
@@ -1281,7 +1300,9 @@ export class BubbleManager {
   spawnNaturalRelease(bubble, profile) {
     const definition = ITEM_CATALOG[bubble.type];
     const texture = this.getItemTexture(definition.particleAsset);
-    const count = this.reducedMotion ? Math.max(8, Math.ceil(profile.count * 0.42)) : profile.count;
+    const count = this.reducedMotion
+      ? Math.max(8, Math.ceil(profile.count * 0.42))
+      : this.scaleEffectCount(profile.count, 8);
     for (let i = 0; i < count; i += 1) {
       const length = bubble.radius * randomBetween(profile.size);
       const width = length * profile.aspect;
@@ -1882,7 +1903,7 @@ export class BubbleManager {
 
   celebrateClear() {
     const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    const count = this.reducedMotion ? 24 : 72;
+    const count = this.reducedMotion ? 24 : this.scaleEffectCount(72, 24);
     for (let i = 0; i < count; i += 1) {
       const size = 2 + Math.random() * 7;
       const dot = new THREE.Mesh(

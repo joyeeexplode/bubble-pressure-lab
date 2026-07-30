@@ -4,6 +4,7 @@ import { analyzeHands, MotionTracker } from "./gestureDetector.js";
 import { BubbleManager } from "./bubbleManager.js";
 import { AudioManager } from "./audioManager.js";
 import { UIControls } from "./uiControls.js";
+import { detectPerformanceProfile, detectWebGL } from "./performanceProfile.js";
 import {
   GameStateMachine,
   PROMPTS,
@@ -14,7 +15,7 @@ import {
 
 const video = document.querySelector("#cameraVideo");
 const canvas = document.querySelector("#threeCanvas");
-const bubbles = new BubbleManager(canvas);
+let bubbles = null;
 const audio = new AudioManager();
 const motion = new MotionTracker();
 
@@ -30,6 +31,13 @@ let lastSuccessfulPopAt = 0;
 let rhythmEnergy = 0.5;
 let lastAmbienceUpdateAt = 0;
 let touchMode = false;
+let performanceProfile = null;
+let handsProcessor = null;
+let cameraStream = null;
+let booting = false;
+let animationFrameId = 0;
+let lastRenderAt = 0;
+let hiddenCleanupTimer = 0;
 const seenExtendedFingers = new Set();
 
 const ui = new UIControls({
@@ -55,18 +63,13 @@ const ui = new UIControls({
     else if (audio.enabled) await audio.ensure();
   },
   onTouchMode: async () => {
-    touchMode = !touchMode;
-    ui.clearError();
-    if (touchMode) {
-      await audio.ensure();
-      startTouchRound();
-    } else {
-      bubbles.clear();
-      seenExtendedFingers.clear();
-      machine.set(STATES.WAIT_FIST);
-    }
+    if (!touchMode) return activateTouchMode();
+    await startHandMode();
     return touchMode;
   },
+  onPrimaryStart: () => startHandMode(),
+  onRetry: () => startHandMode(),
+  onErrorTouch: () => activateTouchMode(),
 });
 
 const machine = new GameStateMachine((state) => {
@@ -91,11 +94,13 @@ const machine = new GameStateMachine((state) => {
 });
 
 function startTouchRound() {
+  if (!bubbles) return;
   bubbles.clear();
   bubbles.resetRoundDraws();
   seenExtendedFingers.clear();
   seenExtendedFingers.add("touch");
-  bubbles.seedTouchField(ui.values);
+  const touchSeedAmount = performanceProfile.id === "high" ? 28 : performanceProfile.id === "balanced" ? 22 : 16;
+  bubbles.seedTouchField(ui.values, touchSeedAmount);
   pinchRoundStartCount = Math.max(1, bubbles.aliveCount());
   clearCelebrated = false;
   combo = 0;
@@ -115,20 +120,49 @@ function handlePopped(popped, now) {
 }
 
 document.querySelector("#app").addEventListener("pointerdown", (event) => {
-  if (!touchMode || paused || event.target.closest("button, input, label, .audio-gate")) return;
+  if (!bubbles || !touchMode || paused || event.target.closest("button, input, label, .audio-gate")) return;
   const now = performance.now();
   const popped = bubbles.popNear({ x: event.clientX, y: event.clientY }, 42);
   handlePopped(popped, now);
 });
 
-document.addEventListener("visibilitychange", async () => {
-  if (document.visibilityState !== "visible" || !audio.enabled || paused) return;
-  const enabled = await audio.ensure();
-  ui.setSoundEnabled(enabled);
+document.addEventListener("visibilitychange", () => {
+  window.clearTimeout(hiddenCleanupTimer);
+  if (document.visibilityState === "hidden") {
+    hiddenCleanupTimer = window.setTimeout(() => {
+      if (document.visibilityState === "hidden") stopCameraSession();
+    }, 1200);
+    return;
+  }
+  if (!touchMode && !handsProcessor) {
+    ui.showError("摄像头已在页面离开时关闭。点击重试即可重新进入手势模式。", {
+      retry: true,
+      touch: true,
+    });
+  }
+  if (audio.enabled && !paused) {
+    audio.ensure().then((enabled) => ui.setSoundEnabled(enabled));
+  }
+});
+
+window.addEventListener("pagehide", () => {
+  window.cancelAnimationFrame(animationFrameId);
+  stopCameraSession();
+});
+
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted) return;
+  animate();
+  if (!touchMode) {
+    ui.showError("页面已恢复，摄像头保持关闭。可重试手势模式或继续使用触控。", {
+      retry: true,
+      touch: true,
+    });
+  }
 });
 
 function processState() {
-  if (paused) return;
+  if (!bubbles || paused) return;
   const now = performance.now();
   const settings = ui.values;
 
@@ -220,8 +254,12 @@ function processState() {
   }
 }
 
-function animate() {
-  requestAnimationFrame(animate);
+function animate(now = performance.now()) {
+  animationFrameId = requestAnimationFrame(animate);
+  if (!bubbles || !performanceProfile) return;
+  const frameInterval = 1000 / performanceProfile.renderFps;
+  if (now - lastRenderAt < frameInterval) return;
+  lastRenderAt = now;
   processState();
   bubbles.update();
   bubbles.render();
@@ -238,30 +276,124 @@ function animate() {
   );
 }
 
-async function boot() {
+function initializeRenderer() {
+  if (bubbles) return true;
+  const webgl = detectWebGL(document);
+  if (!webgl.available) {
+    ui.setPrompt("此设备无法启动图形模式");
+    ui.showError(
+      "当前浏览器或设备未提供可用的 WebGL。请开启浏览器硬件加速后重试，或更换 Chrome / Edge。",
+      { retry: true, touch: false },
+    );
+    return false;
+  }
+
+  performanceProfile = detectPerformanceProfile(webgl, window);
   try {
+    bubbles = new BubbleManager(canvas, performanceProfile);
+  } catch (error) {
+    ui.setPrompt("图形初始化失败");
+    ui.showError(`WebGL 初始化失败：${error.message || "无法创建渲染器"}`, {
+      retry: true,
+      touch: false,
+    });
+    return false;
+  }
+
+  if (performanceProfile.id !== "high") {
+    ui.showPerformanceHint(`已为你的设备开启${performanceProfile.label}`);
+  }
+  canvas.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+    paused = true;
+    ui.setPrompt("图形连接已中断");
+    ui.showError("WebGL 运行中断。系统恢复后可点击重试；也可以刷新页面。", {
+      retry: false,
+      touch: false,
+    });
+  });
+  canvas.addEventListener("webglcontextrestored", () => {
+    paused = false;
+    bubbles?.resize();
+    ui.clearError();
+    ui.showPerformanceHint("图形渲染已恢复");
+  });
+  bubbles.showRenderCheck();
+  return true;
+}
+
+async function stopCameraSession() {
+  const processor = handsProcessor;
+  handsProcessor = null;
+  if (processor) {
+    try {
+      await processor.close();
+    } catch {
+      // Camera utilities may already have released their tracks.
+    }
+  }
+  const streams = [cameraStream, video.srcObject].filter(Boolean);
+  cameraStream = null;
+  for (const stream of new Set(streams)) {
+    for (const track of stream.getTracks?.() ?? []) track.stop();
+  }
+  video.srcObject = null;
+  latestGestures = { hands: [], hasTwoFists: false, hasOpenPalm: false, pinches: [], pinchStarts: [] };
+}
+
+async function activateTouchMode({ preserveError = false } = {}) {
+  if (!initializeRenderer()) return false;
+  await stopCameraSession();
+  touchMode = true;
+  ui.setTouchMode(true);
+  ui.dismissStartGate();
+  if (!preserveError) ui.clearError();
+  await audio.ensure();
+  startTouchRound();
+  return true;
+}
+
+async function startHandMode() {
+  if (booting || !initializeRenderer()) return false;
+  booting = true;
+  try {
+    await stopCameraSession();
+    touchMode = false;
+    ui.setTouchMode(false);
+    ui.clearError();
     ui.setPrompt("正在请求摄像头权限");
-    await setupCamera(video);
-    const processor = createHandsProcessor(video, (results) => {
+    cameraStream = await setupCamera(video, performanceProfile);
+    if (document.visibilityState === "hidden") {
+      throw new Error("页面已转入后台，摄像头启动已取消。");
+    }
+    handsProcessor = createHandsProcessor(video, (results) => {
       latestGestures = analyzeHands(results, {
         width: window.innerWidth,
         height: window.innerHeight,
-        videoWidth: video.videoWidth || 1280,
-        videoHeight: video.videoHeight || 720,
+        videoWidth: video.videoWidth || performanceProfile.cameraWidth,
+        videoHeight: video.videoHeight || performanceProfile.cameraHeight,
       });
-    });
-    await processor.start();
-    if (!touchMode) machine.set(STATES.WAIT_FIST);
-    bubbles.showRenderCheck();
+    }, performanceProfile);
+    await handsProcessor.start();
+    machine.set(STATES.WAIT_FIST);
+    ui.dismissStartGate();
+    return true;
   } catch (error) {
+    await stopCameraSession();
     const message =
       error?.name === "NotAllowedError"
-        ? "摄像头权限被拒绝。请在浏览器地址栏允许摄像头后刷新页面。"
+        ? "摄像头权限被拒绝。已为你切换到触控模式。"
         : error.message || "摄像头或手势识别初始化失败，请使用 Chrome / Edge 并通过本地服务器打开。";
-    ui.showError(message);
-    ui.setPrompt("初始化失败");
+    ui.showError(`${message} 你可以直接点击画面继续玩，或稍后重试手势模式。`, {
+      retry: true,
+      touch: false,
+    });
+    await activateTouchMode({ preserveError: true });
+    return false;
+  } finally {
+    booting = false;
   }
 }
 
+initializeRenderer();
 animate();
-boot();
