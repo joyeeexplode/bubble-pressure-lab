@@ -1,4 +1,4 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js";
+import * as THREE from "../assets/vendor/three/three.module.js";
 import { ITEM_CATALOG, THEME_POOLS, TOY_ITEM_TYPES } from "./itemCatalog.js";
 import { NATURAL_RELEASE_PROFILES } from "./naturalReleaseProfiles.js";
 import { CRUSHABLE_EFFECTS } from "./crushableCatalog.js";

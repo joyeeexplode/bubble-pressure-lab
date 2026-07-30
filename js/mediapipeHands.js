@@ -4,7 +4,7 @@ export function createHandsProcessor(videoEl, onResults) {
   }
 
   const hands = new window.Hands({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`,
+    locateFile: (file) => `./assets/vendor/mediapipe/hands/${file}`,
   });
 
   hands.setOptions({
