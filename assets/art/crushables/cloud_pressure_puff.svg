@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="云朵压力团">
+  <title>云朵压力团</title>
+  <defs>
+    <radialGradient id="fill" cx="36%" cy="28%" r="74%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.92"/>
+      <stop offset="48%" stop-color="#EAFBFF"/>
+      <stop offset="100%" stop-color="#DCCBFF"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#243B53" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <path d="M62 160c-24-3-37-23-27-44 7-16 23-23 40-19 7-30 32-49 63-43 24 5 40 22 45 45 21-1 38 13 41 34 4 25-15 47-42 47H69c-3 0-5 0-7-1Z" fill="url(#fill)" filter="url(#shadow)"/>
+  <path d="M80 139c27 14 66 17 101 2" fill="none" stroke="#FFFFFF" stroke-opacity="0.52" stroke-width="7" stroke-linecap="round"/>
+</svg>

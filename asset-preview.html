@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>解压元素 · 美术验收台</title>
+    <link rel="stylesheet" href="./asset-preview.css" />
+  </head>
+  <body data-background="checker">
+    <video id="previewCamera" autoplay playsinline muted></video>
+
+    <header class="preview-header">
+      <div>
+        <p>AR BUBBLE LAB</p>
+        <h1>美术资产验收台</h1>
+      </div>
+      <nav aria-label="预览背景">
+        <button type="button" data-bg="checker">棋盘格</button>
+        <button type="button" data-bg="light">白色</button>
+        <button type="button" data-bg="dark">黑色</button>
+        <button type="button" data-bg="camera">摄像头</button>
+      </nav>
+    </header>
+
+    <main>
+      <p id="previewStatus" class="preview-status">
+        检查外轮廓、内部空洞、半透明边缘及真实游戏尺寸。
+      </p>
+      <section id="assetGrid" class="asset-grid"></section>
+    </main>
+
+    <template id="assetCardTemplate">
+      <article class="asset-card">
+        <div class="asset-stage"><img alt="" /></div>
+        <div class="asset-meta">
+          <strong></strong>
+          <span class="material"></span>
+          <span class="effect"></span>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="./js/assetPreview.js"></script>
+  </body>
+</html>

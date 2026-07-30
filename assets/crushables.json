@@ -1,0 +1,732 @@
+{
+  "crushables": [
+    {
+      "id": "ice_bubble",
+      "name": "Ice Bubble",
+      "zh": "冰泡泡",
+      "category": "ice",
+      "primary": "#B9F7FF",
+      "secondary": "#55D6E8",
+      "accent": "#FFFFFF",
+      "shape": "circle",
+      "mechanic": "tap-crack",
+      "input": "tap repeatedly or press until cracks meet",
+      "release": "shatters into cool mist and tiny ice stars",
+      "sound": "thin crack, airy pop, fine crystal scatter",
+      "particles": [
+        "ice shards",
+        "mist puff",
+        "white sparkle"
+      ],
+      "art": "assets/art/crushables/ice_bubble.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "cracked_ice_cube",
+      "name": "Cracked Ice Cube",
+      "zh": "裂纹冰块",
+      "category": "ice",
+      "primary": "#D7F7FF",
+      "secondary": "#8DEBFF",
+      "accent": "#2FB7D1",
+      "shape": "cube",
+      "mechanic": "stress-lines",
+      "input": "hold to grow fractures, release to snap",
+      "release": "breaks into sliding translucent plates",
+      "sound": "deep ice creak followed by crisp snap",
+      "particles": [
+        "flat shards",
+        "frost dust",
+        "cyan glints"
+      ],
+      "art": "assets/art/crushables/cracked_ice_cube.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "frozen_pressure_block",
+      "name": "Frozen Pressure Block",
+      "zh": "冻住的压力方块",
+      "category": "ice",
+      "primary": "#A7F3FF",
+      "secondary": "#6DD6E8",
+      "accent": "#243B53",
+      "shape": "rounded_cube",
+      "mechanic": "charge-crush",
+      "input": "charge squeeze, then crush at threshold",
+      "release": "dark trapped stress leaks out as bubbles",
+      "sound": "muffled thump, crackle, soft exhale",
+      "particles": [
+        "blue bubbles",
+        "hairline cracks",
+        "cold fog"
+      ],
+      "art": "assets/art/crushables/frozen_pressure_block.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "clear_candy_shell",
+      "name": "Clear Candy Shell",
+      "zh": "透明糖壳球",
+      "category": "candy",
+      "primary": "#FFE66D",
+      "secondary": "#B9F7FF",
+      "accent": "#FF7A7A",
+      "shape": "circle",
+      "mechanic": "shell-pop",
+      "input": "tap weak points on glossy shell",
+      "release": "sugar shell flakes away and reveals soft color",
+      "sound": "bright candy tick, brittle crack",
+      "particles": [
+        "sugar flakes",
+        "tiny hearts",
+        "gloss dots"
+      ],
+      "art": "assets/art/crushables/clear_candy_shell.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "caramel_glass",
+      "name": "Caramel Glass",
+      "zh": "焦糖薄片",
+      "category": "candy",
+      "primary": "#FFB347",
+      "secondary": "#FFE66D",
+      "accent": "#FFF5B8",
+      "shape": "shard",
+      "mechanic": "slice-break",
+      "input": "swipe through the thin brittle sheet",
+      "release": "sheet splits into amber triangles",
+      "sound": "light sugar glass crackle",
+      "particles": [
+        "amber triangles",
+        "gold dust",
+        "shine streaks"
+      ],
+      "art": "assets/art/crushables/caramel_glass.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "star_sugar_crystal",
+      "name": "Star Sugar Crystal",
+      "zh": "星星糖晶",
+      "category": "candy",
+      "primary": "#FFE66D",
+      "secondary": "#FF7A7A",
+      "accent": "#FFFFFF",
+      "shape": "star",
+      "mechanic": "perfect-hit",
+      "input": "tap when pulse ring reaches the points",
+      "release": "bursts into star crumbs and score chimes",
+      "sound": "sparkly arpeggio and tiny crumble",
+      "particles": [
+        "star crumbs",
+        "score sparks",
+        "rainbow dust"
+      ],
+      "art": "assets/art/crushables/star_sugar_crystal.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "color_crunch_tablet",
+      "name": "Color Crunch Tablet",
+      "zh": "彩色脆糖药片",
+      "category": "candy",
+      "primary": "#FF7A7A",
+      "secondary": "#55D6E8",
+      "accent": "#FFE66D",
+      "shape": "capsule",
+      "mechanic": "split-match",
+      "input": "press both colored halves together",
+      "release": "tablet snaps and releases matching color notes",
+      "sound": "two-tone click and powder puff",
+      "particles": [
+        "color powder",
+        "music notes",
+        "half chips"
+      ],
+      "art": "assets/art/crushables/color_crunch_tablet.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "walnut_pressure_shell",
+      "name": "Walnut Pressure Shell",
+      "zh": "核桃压力壳",
+      "category": "nut",
+      "primary": "#B9824C",
+      "secondary": "#7A4D2A",
+      "accent": "#F7D7A8",
+      "shape": "nut",
+      "mechanic": "resistance-crack",
+      "input": "hold squeeze against resistance until it gives",
+      "release": "shell opens with a satisfying center split",
+      "sound": "wooden creak, dry crack, small bounce",
+      "particles": [
+        "shell chips",
+        "warm dust",
+        "kernel glow"
+      ],
+      "art": "assets/art/crushables/walnut_pressure_shell.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "pistachio_clamp",
+      "name": "Pistachio Clamp",
+      "zh": "开心果夹壳",
+      "category": "nut",
+      "primary": "#E7D8B1",
+      "secondary": "#8CCB75",
+      "accent": "#5C8E4E",
+      "shape": "shell",
+      "mechanic": "pry-open",
+      "input": "drag the split open like a tiny clamp",
+      "release": "green core pops out with a wink-like bounce",
+      "sound": "small woody click and pop",
+      "particles": [
+        "shell halves",
+        "green flecks",
+        "pop ring"
+      ],
+      "art": "assets/art/crushables/pistachio_clamp.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "hazelnut_hard_orb",
+      "name": "Hazelnut Hard Orb",
+      "zh": "榛子硬壳球",
+      "category": "nut",
+      "primary": "#A76635",
+      "secondary": "#6E3F22",
+      "accent": "#FFD6A0",
+      "shape": "circle",
+      "mechanic": "multi-hit",
+      "input": "three compact hits chip the shell down",
+      "release": "final hit reveals a soft golden center",
+      "sound": "toc, toc, crack",
+      "particles": [
+        "round chips",
+        "shell dust",
+        "gold core bits"
+      ],
+      "art": "assets/art/crushables/hazelnut_hard_orb.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "pearl_seal_shell",
+      "name": "Pearl Seal Shell",
+      "zh": "珍珠封印壳",
+      "category": "shell",
+      "primary": "#FFF6FA",
+      "secondary": "#DCCBFF",
+      "accent": "#9AE7FF",
+      "shape": "shell",
+      "mechanic": "unlock-seal",
+      "input": "trace the glowing seam to release the seal",
+      "release": "center pearl rises and cleans nearby stress marks",
+      "sound": "pearl chime with calm water tail",
+      "particles": [
+        "pearl rings",
+        "soft bubbles",
+        "seal dust"
+      ],
+      "art": "assets/art/crushables/pearl_seal_shell.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "glass_bead_light_orb",
+      "name": "Glass Bead Light Orb",
+      "zh": "玻璃珠光粒球",
+      "category": "crystal",
+      "primary": "#B9F7FF",
+      "secondary": "#DCCBFF",
+      "accent": "#FFFFFF",
+      "shape": "circle",
+      "mechanic": "light-fracture",
+      "input": "tap once to split into harmless light motes",
+      "release": "sphere becomes floating points of light",
+      "sound": "delicate glass ping and sparkle trail",
+      "particles": [
+        "light motes",
+        "tiny prisms",
+        "soft rings"
+      ],
+      "art": "assets/art/crushables/glass_bead_light_orb.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "asteroid_soft_candy",
+      "name": "Asteroid Soft Candy",
+      "zh": "小行星软心糖",
+      "category": "space",
+      "primary": "#6D6A75",
+      "secondary": "#FF7A7A",
+      "accent": "#FFE66D",
+      "shape": "rock",
+      "mechanic": "outer-hard-inner-soft",
+      "input": "chip rough shell, then squeeze soft core",
+      "release": "rough surface opens into warm candy goo",
+      "sound": "stone chip, rubbery squish, sweet sparkle",
+      "particles": [
+        "rock chips",
+        "candy drops",
+        "warm stars"
+      ],
+      "art": "assets/art/crushables/asteroid_soft_candy.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "meteor_jelly_core",
+      "name": "Meteor Jelly Core",
+      "zh": "陨石果冻核",
+      "category": "space",
+      "primary": "#514B62",
+      "secondary": "#55D6E8",
+      "accent": "#FF7A7A",
+      "shape": "rock",
+      "mechanic": "impact-squish",
+      "input": "drop or fling it into a soft wall",
+      "release": "meteor shell pops off and jelly core jiggles",
+      "sound": "soft impact, crackle, wobble boing",
+      "particles": [
+        "space dust",
+        "jelly drops",
+        "orbit rings"
+      ],
+      "art": "assets/art/crushables/meteor_jelly_core.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "bubble_wrap_tile",
+      "name": "Bubble Wrap Tile",
+      "zh": "气泡膜地砖",
+      "category": "bubblewrap",
+      "primary": "#D7F7FF",
+      "secondary": "#55D6E8",
+      "accent": "#FFFFFF",
+      "shape": "grid",
+      "mechanic": "grid-pop",
+      "input": "tap individual cells or drag to sweep-pop",
+      "release": "cells deflate one by one with tiny dimples",
+      "sound": "short plastic pops in quick sequence",
+      "particles": [
+        "mini rings",
+        "air puffs",
+        "cell dimples"
+      ],
+      "art": "assets/art/crushables/bubble_wrap_tile.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "chain_pop_grid",
+      "name": "Chain Pop Grid",
+      "zh": "连锁爆泡网格",
+      "category": "bubblewrap",
+      "primary": "#9AE7FF",
+      "secondary": "#FFE66D",
+      "accent": "#FF7A7A",
+      "shape": "grid",
+      "mechanic": "chain-reaction",
+      "input": "start one pop and watch neighbors cascade",
+      "release": "wave of pops travels across the board",
+      "sound": "accelerating pop cascade",
+      "particles": [
+        "pop wave",
+        "number sparks",
+        "confetti dots"
+      ],
+      "art": "assets/art/crushables/chain_pop_grid.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "sealed_air_bag",
+      "name": "Sealed Air Bag",
+      "zh": "封印气囊",
+      "category": "air",
+      "primary": "#B9F7FF",
+      "secondary": "#FFFFFF",
+      "accent": "#55D6E8",
+      "shape": "pillow",
+      "mechanic": "inflate-burst",
+      "input": "press until it bulges, then releases air",
+      "release": "pressure escapes as a funny soft whoosh",
+      "sound": "rubbery strain and comedic air puff",
+      "particles": [
+        "air rings",
+        "stretch marks",
+        "tiny bubbles"
+      ],
+      "art": "assets/art/crushables/sealed_air_bag.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "bulging_pressure_pouch",
+      "name": "Bulging Pressure Pouch",
+      "zh": "鼓胀压力袋",
+      "category": "air",
+      "primary": "#DCCBFF",
+      "secondary": "#FFB3C7",
+      "accent": "#FFFFFF",
+      "shape": "pillow",
+      "mechanic": "controlled-release",
+      "input": "hold to squeeze pressure toward a valve",
+      "release": "valve opens and stress drains smoothly",
+      "sound": "soft rubber squeeze and valve sigh",
+      "particles": [
+        "valve stream",
+        "soft dots",
+        "relief rings"
+      ],
+      "art": "assets/art/crushables/bulging_pressure_pouch.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "jelly_bubble",
+      "name": "Jelly Bubble",
+      "zh": "果冻泡泡",
+      "category": "jelly",
+      "primary": "#FFB3C7",
+      "secondary": "#55D6E8",
+      "accent": "#FFFFFF",
+      "shape": "circle",
+      "mechanic": "squish-rebound",
+      "input": "squeeze, stretch, and release for rebound",
+      "release": "bubble wobbles and pops into soft droplets",
+      "sound": "rubbery squish and cute plop",
+      "particles": [
+        "jelly drops",
+        "wobble rings",
+        "gloss pops"
+      ],
+      "art": "assets/art/crushables/jelly_bubble.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "gummy_cube",
+      "name": "Gummy Cube",
+      "zh": "软糖立方",
+      "category": "jelly",
+      "primary": "#8CCB75",
+      "secondary": "#55D6E8",
+      "accent": "#FFE66D",
+      "shape": "rounded_cube",
+      "mechanic": "compress-stack",
+      "input": "press flat, release to bounce back or split",
+      "release": "cube deforms then divides into smaller gummies",
+      "sound": "soft squelch and springy bounce",
+      "particles": [
+        "mini gummies",
+        "juice dots",
+        "bounce arcs"
+      ],
+      "art": "assets/art/crushables/gummy_cube.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "marshmallow_cloud",
+      "name": "Marshmallow Cloud",
+      "zh": "棉花糖云团",
+      "category": "cloud",
+      "primary": "#FFFFFF",
+      "secondary": "#F4CDEB",
+      "accent": "#B9F7FF",
+      "shape": "cloud",
+      "mechanic": "knead-soften",
+      "input": "slow circular rubs soften the cloud",
+      "release": "cloud gently dissolves into sweetness",
+      "sound": "soft cloth puff and sugar sparkle",
+      "particles": [
+        "cloud puffs",
+        "sugar dust",
+        "slow hearts"
+      ],
+      "art": "assets/art/crushables/marshmallow_cloud.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "cloud_pressure_puff",
+      "name": "Cloud Pressure Puff",
+      "zh": "云朵压力团",
+      "category": "cloud",
+      "primary": "#EAFBFF",
+      "secondary": "#DCCBFF",
+      "accent": "#FFFFFF",
+      "shape": "cloud",
+      "mechanic": "restore-after-squeeze",
+      "input": "squeeze to flatten, release to recover",
+      "release": "pressure fades without breaking the object",
+      "sound": "breathy inhale-exhale loop",
+      "particles": [
+        "mist curls",
+        "soft rings",
+        "calm dots"
+      ],
+      "art": "assets/art/crushables/cloud_pressure_puff.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "sponge_foam_block",
+      "name": "Sponge Foam Block",
+      "zh": "海绵泡沫块",
+      "category": "foam",
+      "primary": "#FFE66D",
+      "secondary": "#B9F7FF",
+      "accent": "#55D6E8",
+      "shape": "rounded_cube",
+      "mechanic": "slow-compress",
+      "input": "hold pressure and watch it slowly collapse",
+      "release": "block reinflates with a small bubble trail",
+      "sound": "foam crunch and wet tiny bubbles",
+      "particles": [
+        "foam cells",
+        "bubble trail",
+        "soft crumbs"
+      ],
+      "art": "assets/art/crushables/sponge_foam_block.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "bubble_foam_brick",
+      "name": "Bubble Foam Brick",
+      "zh": "会挤出小泡泡的泡沫砖",
+      "category": "foam",
+      "primary": "#B9F7FF",
+      "secondary": "#8CCB75",
+      "accent": "#FFFFFF",
+      "shape": "rounded_cube",
+      "mechanic": "squeeze-extrude",
+      "input": "drag pressure across brick to push bubbles out",
+      "release": "tiny bubbles escape from pores",
+      "sound": "squeaky foam and miniature pops",
+      "particles": [
+        "pore bubbles",
+        "foam dots",
+        "stretch ripples"
+      ],
+      "art": "assets/art/crushables/bubble_foam_brick.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "dry_leaf_chip",
+      "name": "Dry Leaf Chip",
+      "zh": "干叶脆片",
+      "category": "paper",
+      "primary": "#C49A45",
+      "secondary": "#8CCB75",
+      "accent": "#FFF0B3",
+      "shape": "leaf",
+      "mechanic": "asmr-crinkle",
+      "input": "pinch and crumble at the veins",
+      "release": "leaf breaks into harmless golden flakes",
+      "sound": "dry crinkle and delicate rustle",
+      "particles": [
+        "leaf flakes",
+        "vein lines",
+        "dust motes"
+      ],
+      "art": "assets/art/crushables/dry_leaf_chip.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "crumpled_paper_ball",
+      "name": "Crumpled Paper Ball",
+      "zh": "揉皱纸团",
+      "category": "paper",
+      "primary": "#F7F5EC",
+      "secondary": "#C9D6DF",
+      "accent": "#55D6E8",
+      "shape": "paper",
+      "mechanic": "smooth-or-crush",
+      "input": "rub to smooth or squeeze to compress",
+      "release": "paper opens into a clean little bubble note",
+      "sound": "paper crumple, soft unfold, tiny pop",
+      "particles": [
+        "paper folds",
+        "ink dots",
+        "note bubbles"
+      ],
+      "art": "assets/art/crushables/crumpled_paper_ball.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "porcelain_emotion_mask",
+      "name": "Porcelain Emotion Mask",
+      "zh": "薄瓷情绪面具",
+      "category": "ceramic",
+      "primary": "#F9FBFF",
+      "secondary": "#B9F7FF",
+      "accent": "#FF7A7A",
+      "shape": "mask",
+      "mechanic": "gentle-fracture",
+      "input": "tap along expression lines to release tension",
+      "release": "mask cracks into light, not sharp debris",
+      "sound": "porcelain tick, soft chime, breath",
+      "particles": [
+        "porcelain petals",
+        "light cracks",
+        "blush motes"
+      ],
+      "art": "assets/art/crushables/porcelain_emotion_mask.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    },
+    {
+      "id": "light_cracking_ceramic",
+      "name": "Light-Cracking Ceramic",
+      "zh": "会裂成光的陶片",
+      "category": "ceramic",
+      "primary": "#E8F0FF",
+      "secondary": "#DCCBFF",
+      "accent": "#FFE66D",
+      "shape": "shard",
+      "mechanic": "trace-crack",
+      "input": "draw a crack line and convert it into light",
+      "release": "ceramic shard dissolves into luminous petals",
+      "sound": "ceramic ping with glowing dissolve",
+      "particles": [
+        "light petals",
+        "fine dust",
+        "gold rays"
+      ],
+      "art": "assets/art/crushables/light_cracking_ceramic.svg",
+      "states": [
+        "idle",
+        "pressed",
+        "cracked",
+        "released"
+      ]
+    }
+  ]
+}

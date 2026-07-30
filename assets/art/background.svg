@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Soft bubble background">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ECFBFF"/>
+      <stop offset="58%" stop-color="#D7F2FF"/>
+      <stop offset="100%" stop-color="#BEEBFF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.88"/>
+      <stop offset="100%" stop-color="#55D6E8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1440" height="900" fill="url(#sky)"/>
+  <circle cx="220" cy="180" r="170" fill="url(#glow)" opacity="0.72"/>
+  <circle cx="1120" cy="220" r="210" fill="url(#glow)" opacity="0.54"/>
+  <circle cx="760" cy="690" r="260" fill="url(#glow)" opacity="0.45"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.56">
+    <circle cx="196" cy="642" r="52"/>
+    <circle cx="318" cy="512" r="26"/>
+    <circle cx="1040" cy="596" r="64"/>
+    <circle cx="1218" cy="456" r="34"/>
+    <circle cx="812" cy="230" r="42"/>
+    <circle cx="620" cy="380" r="22"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.78">
+    <path d="M480 142h18v18h-18z" transform="rotate(45 489 151)"/>
+    <path d="M1320 706h14v14h-14z" transform="rotate(45 1327 713)"/>
+    <path d="M720 536h10v10h-10z" transform="rotate(45 725 541)"/>
+  </g>
+</svg>

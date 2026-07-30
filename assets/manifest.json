@@ -1,0 +1,23 @@
+{
+  "art": {
+    "bubble": "assets/art/bubble.svg",
+    "playerOrb": "assets/art/player-orb.svg",
+    "background": "assets/art/background.svg",
+    "crushables": "assets/crushables.json"
+  },
+  "audio": {
+    "pop": "assets/audio/pop.wav",
+    "collect": "assets/audio/collect.wav",
+    "bounce": "assets/audio/bounce.wav",
+    "start": "assets/audio/start.wav"
+  },
+  "music": {
+    "background": "assets/music/bgm_bright_melodic_edm.ogg",
+    "menuLoop": "assets/music/bgm_bright_melodic_loopy_edm.ogg",
+    "levelLoop": "assets/music/bgm_bright_melodic_loopy_edm.ogg",
+    "upbeatHealing": "assets/music/bgm_upbeat_healing_starlight_city_loop.ogg",
+    "softRelaxing": "assets/music/bgm_relaxing_ambient_loop.ogg",
+    "cuteFun": "assets/music/bgm_cute_talking_chiptune.mp3",
+    "electronicClassicalAlt": "assets/music/bgm_cyberpunk_moonlight_sonata.mp3"
+  }
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>沉浸式泡泡解压实验室</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="app" class="app">
+      <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+      <div id="atmosphereLayer" class="atmosphere-layer" aria-hidden="true"></div>
+      <canvas id="threeCanvas" class="three-canvas"></canvas>
+      <div id="pinchCursor" class="pinch-cursor" aria-hidden="true"></div>
+      <div id="audioGate" class="audio-gate">
+        <button id="audioGateButton" type="button">开启声音并进入</button>
+        <span id="audioStatus">浏览器需要一次点击才能播放音乐和破裂音效</span>
+      </div>
+
+      <section class="hud" aria-live="polite">
+        <div class="stage-card">
+          <span class="stage-kicker">AR Bubble Lab</span>
+          <h1 id="stagePrompt">请允许摄像头权限</h1>
+          <p id="debugInfo">所有识别与渲染都在浏览器本地完成。</p>
+        </div>
+
+        <div class="controls" aria-label="游戏控制面板">
+          <div class="mixer-status" aria-live="polite">
+            <span id="sceneStatus">月光</span>
+            <span id="rhythmStatus">流动</span>
+          </div>
+          <label class="mixer-channel">
+            <span>大小</span>
+            <input id="bubbleSize" type="range" min="0.55" max="1.8" step="0.01" value="1.44" />
+          </label>
+          <label class="mixer-channel">
+            <span>透明</span>
+            <input id="bubbleOpacity" type="range" min="0.18" max="0.9" step="0.02" value="0.55" />
+          </label>
+          <label class="mixer-channel">
+            <span>音乐</span>
+            <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.38" />
+          </label>
+          <label class="mixer-channel">
+            <span>破裂</span>
+            <input id="popVolume" type="range" min="0" max="1" step="0.01" value="0.78" />
+          </label>
+          <div class="mixer-actions">
+            <button id="touchToggle" type="button" title="触控模式" aria-label="触控模式"><span aria-hidden="true">✦</span></button>
+            <button id="switchMusic" type="button" title="切换音乐" aria-label="切换音乐"><span aria-hidden="true">♫</span></button>
+            <button id="soundToggle" type="button" class="sound-toggle" title="开启声音" aria-label="开启声音"><span aria-hidden="true">◉</span></button>
+            <button id="pauseToggle" type="button" title="暂停" aria-label="暂停"><span aria-hidden="true">Ⅱ</span></button>
+          </div>
+        </div>
+      </section>
+
+      <div id="errorPanel" class="error-panel" hidden></div>
+    </main>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"
+      integrity="sha384-oHwoZ9HyKv5ark5VOH+XWdbNfmhYtptAOBuV8plz6mAfXvTA6d8fULuYllWouEK2"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"
+      integrity="sha384-q1KhAZhJcJXr3zfC3Tz07pBqQSabwFIZhXlmlUAB8s0zk4ETWERkIKGBCFQ5Jc3e"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="./js/main.js?v=20260730-1"></script>
+  </body>
+</html>

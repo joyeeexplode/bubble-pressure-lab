@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="榛子硬壳球">
+  <title>榛子硬壳球</title>
+  <defs>
+    <radialGradient id="fill" cx="36%" cy="28%" r="74%">
+      <stop offset="0%" stop-color="#FFD6A0" stop-opacity="0.92"/>
+      <stop offset="48%" stop-color="#A76635"/>
+      <stop offset="100%" stop-color="#6E3F22"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#243B53" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <circle cx="128" cy="128" r="90" fill="url(#fill)" filter="url(#shadow)"/>
+  <circle cx="128" cy="128" r="86" fill="none" stroke="#FFFFFF" stroke-opacity="0.68" stroke-width="5"/>
+  <path d="M78 92c19-31 46-43 82-36" fill="none" stroke="#FFFFFF" stroke-opacity="0.68" stroke-width="10" stroke-linecap="round"/>
+  <path d="M88 145l31-32 22 43 31-36" fill="none" stroke="#243B53" stroke-opacity="0.28" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

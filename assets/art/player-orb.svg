@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Player orb">
+  <defs>
+    <radialGradient id="orbFill" cx="42%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="35%" stop-color="#A7F3FF"/>
+      <stop offset="72%" stop-color="#55D6E8"/>
+      <stop offset="100%" stop-color="#259FC4"/>
+    </radialGradient>
+    <linearGradient id="finFill" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FFE66D"/>
+      <stop offset="100%" stop-color="#FF7A7A"/>
+    </linearGradient>
+    <filter id="orbShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#243B53" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <path d="M34 135c22-28 45-33 70-13-20 17-42 21-70 13Z" fill="url(#finFill)" opacity="0.96"/>
+  <path d="M222 135c-22-28-45-33-70-13 20 17 42 21 70 13Z" fill="url(#finFill)" opacity="0.96"/>
+  <circle cx="128" cy="128" r="88" fill="url(#orbFill)" filter="url(#orbShadow)"/>
+  <circle cx="128" cy="128" r="84" fill="none" stroke="#FFFFFF" stroke-opacity="0.58" stroke-width="5"/>
+  <circle cx="98" cy="118" r="10" fill="#243B53"/>
+  <circle cx="158" cy="118" r="10" fill="#243B53"/>
+  <circle cx="102" cy="114" r="3" fill="#FFFFFF"/>
+  <circle cx="162" cy="114" r="3" fill="#FFFFFF"/>
+  <path d="M103 153c15 13 35 13 50 0" fill="none" stroke="#243B53" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="86" cy="72" rx="18" ry="10" fill="#FFFFFF" opacity="0.72" transform="rotate(-32 86 72)"/>
+</svg>
