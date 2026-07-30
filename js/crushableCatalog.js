@@ -47,7 +47,7 @@ export const CRUSHABLE_DEFINITIONS = Object.fromEntries(
     ids.map((id) => [
       id,
       {
-        asset: `./assets/pop-items/crushables/${id}.png?v=20260730-candy1`,
+        asset: `./assets/pop-items/crushables/${id}.webp?v=20260730-webp1`,
         materialFamily: group,
         effectProfile: FOCUSED_EFFECTS[id] ?? EFFECT_BY_GROUP[group],
         audioProfile: id,
