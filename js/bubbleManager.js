@@ -44,8 +44,6 @@ export class BubbleManager {
     this.nextId = 1;
     this.textureCache = new Map();
     this.textureLoader = new THREE.TextureLoader();
-    this.idleTextureQueue = [];
-    this.idlePreloadScheduled = false;
     this.roundFingerDraws = [];
     this.recentItemTypes = [];
     this.recentMaterials = [];
@@ -271,54 +269,12 @@ export class BubbleManager {
 
   getItemTexture(path) {
     if (this.textureCache.has(path)) return this.textureCache.get(path);
-    const texture = this.textureLoader.load(path, undefined, undefined, () => {
-      const fallback = this.makeBubbleTexture(false);
-      texture.image = fallback.image;
-      texture.needsUpdate = true;
-    });
+    const texture = this.textureLoader.load(path);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     this.textureCache.set(path, texture);
     return texture;
-  }
-
-  preloadThemeAssets(theme = this.currentTheme) {
-    const immediateTypes = theme?.items ?? [];
-    for (const type of immediateTypes) {
-      const definition = ITEM_CATALOG[type];
-      if (definition?.asset) this.getItemTexture(definition.asset);
-      if (definition?.particleAsset) this.getItemTexture(definition.particleAsset);
-    }
-    if (this.idlePreloadScheduled) return;
-    this.idlePreloadScheduled = true;
-    const immediate = new Set(immediateTypes);
-    this.idleTextureQueue = Object.entries(ITEM_CATALOG)
-      .filter(([type]) => !immediate.has(type))
-      .flatMap(([, definition]) => [definition.asset, definition.particleAsset])
-      .filter(Boolean);
-    this.scheduleIdleTextureBatch();
-  }
-
-  scheduleIdleTextureBatch() {
-    if (!this.idleTextureQueue.length) return;
-    const loadBatch = (deadline) => {
-      let loaded = 0;
-      while (
-        this.idleTextureQueue.length
-        && loaded < 3
-        && (deadline.didTimeout || deadline.timeRemaining() > 4)
-      ) {
-        this.getItemTexture(this.idleTextureQueue.shift());
-        loaded += 1;
-      }
-      if (this.idleTextureQueue.length) this.scheduleIdleTextureBatch();
-    };
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(loadBatch, { timeout: 1800 });
-    } else {
-      window.setTimeout(() => loadBatch({ didTimeout: true, timeRemaining: () => 0 }), 240);
-    }
   }
 
   getMaterialCounts() {
@@ -447,7 +403,6 @@ export class BubbleManager {
     this.roundToyDraws = 0;
     this.roundFocusDrawn = false;
     this.currentTheme = pickRandomTheme(THEME_POOLS);
-    this.preloadThemeAssets(this.currentTheme);
     const focusPool = this.currentTheme.items.filter((type) =>
       TOY_ITEM_TYPES.includes(type) && type !== "cyberChicken",
     );

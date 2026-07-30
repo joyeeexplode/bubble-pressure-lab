@@ -32,8 +32,6 @@ export class UIControls {
     this.pauseBtn = document.querySelector("#pauseToggle");
     this.soundBtn = document.querySelector("#soundToggle");
     this.touchBtn = document.querySelector("#touchToggle");
-    this.settingsBtn = document.querySelector("#settingsToggle");
-    this.settingsPanel = document.querySelector("#mixerSettings");
     this.audioGate = document.querySelector("#audioGate");
     this.audioGateButton = document.querySelector("#audioGateButton");
     this.touchStartButton = document.querySelector("#touchStartButton");
@@ -109,14 +107,6 @@ export class UIControls {
     this.touchBtn.addEventListener("click", async () => {
       const enabled = await onTouchMode?.();
       this.setTouchMode(enabled);
-    });
-
-    this.settingsBtn.addEventListener("click", () => {
-      const expanded = this.settingsPanel.hidden;
-      this.settingsPanel.hidden = !expanded;
-      this.settingsBtn.classList.toggle("active", expanded);
-      this.settingsBtn.setAttribute("aria-expanded", String(expanded));
-      this.settingsBtn.setAttribute("aria-label", expanded ? "收起设置" : "展开设置");
     });
 
     this.touchStartButton.addEventListener("click", () => onErrorTouch?.());

@@ -26,28 +26,26 @@
         </div>
 
         <div class="controls" aria-label="游戏控制面板">
-          <div id="mixerSettings" class="mixer-settings" hidden>
-            <div class="mixer-status" aria-live="polite">
-              <span id="sceneStatus">月光</span>
-              <span id="rhythmStatus">流动</span>
-            </div>
-            <label class="mixer-channel">
-              <span>大小</span>
-              <input id="bubbleSize" type="range" min="0.55" max="1.8" step="0.01" value="1.44" />
-            </label>
-            <label class="mixer-channel">
-              <span>透明</span>
-              <input id="bubbleOpacity" type="range" min="0.18" max="0.9" step="0.02" value="0.55" />
-            </label>
-            <label class="mixer-channel">
-              <span>音乐</span>
-              <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.38" />
-            </label>
-            <label class="mixer-channel">
-              <span>破裂</span>
-              <input id="popVolume" type="range" min="0" max="1" step="0.01" value="0.78" />
-            </label>
+          <div class="mixer-status" aria-live="polite">
+            <span id="sceneStatus">月光</span>
+            <span id="rhythmStatus">流动</span>
           </div>
+          <label class="mixer-channel">
+            <span>大小</span>
+            <input id="bubbleSize" type="range" min="0.55" max="1.8" step="0.01" value="1.44" />
+          </label>
+          <label class="mixer-channel">
+            <span>透明</span>
+            <input id="bubbleOpacity" type="range" min="0.18" max="0.9" step="0.02" value="0.55" />
+          </label>
+          <label class="mixer-channel">
+            <span>音乐</span>
+            <input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.38" />
+          </label>
+          <label class="mixer-channel">
+            <span>破裂</span>
+            <input id="popVolume" type="range" min="0" max="1" step="0.01" value="0.78" />
+          </label>
           <div class="mixer-actions">
             <button id="touchToggle" type="button" title="触控模式" aria-label="触控模式">
               <span aria-hidden="true">✦</span>
@@ -66,15 +64,6 @@
             </button>
             <button id="pauseToggle" type="button" title="暂停" aria-label="暂停">
               <span aria-hidden="true">Ⅱ</span>
-            </button>
-            <button
-              id="settingsToggle"
-              type="button"
-              title="设置"
-              aria-label="展开设置"
-              aria-expanded="false"
-            >
-              <span aria-hidden="true">⚙</span>
             </button>
           </div>
         </div>
