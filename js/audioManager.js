@@ -18,6 +18,7 @@ export class AudioManager {
       "./assets/music/bgm_bright_melodic_loopy_edm.ogg",
       "./assets/music/bgm_bright_melodic_edm.ogg",
       "./assets/music/bgm_relaxing_ambient_loop.ogg",
+      "./assets/music/bgm_kpop_bright_stars_loop.ogg",
     ];
     this.chords = [
       [110, 164.81, 220],
@@ -116,11 +117,13 @@ export class AudioManager {
       [0, 1, 2, 1, 0, 2, 1, 2],
       [0, 2, 0, 1, 2, 1, 0, 2],
     ];
-    this.musicHit(this.chords[this.musicIndex][0], 0.18, 0.32, "sine");
+    const chordIndex = this.musicIndex % this.chords.length;
+    const patternIndex = this.musicIndex % patterns.length;
+    this.musicHit(this.chords[chordIndex][0], 0.18, 0.32, "sine");
     this.musicTimer = window.setInterval(() => {
       if (!this.musicMaster) return;
-      const chord = this.chords[this.musicIndex];
-      const note = chord[patterns[this.musicIndex][step % 8]];
+      const chord = this.chords[chordIndex];
+      const note = chord[patterns[patternIndex][step % 8]];
       if (step % 4 === 0) this.musicHit(note * 0.5, 0.22, 0.52, "sine");
       if (step % 2 === 0) this.musicHit(note * 2, 0.09, 0.16, "triangle");
       else this.musicHit(note * 3, 0.055, 0.08, "sine");

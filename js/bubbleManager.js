@@ -4,6 +4,7 @@ import { NATURAL_RELEASE_PROFILES } from "./naturalReleaseProfiles.js";
 import { CRUSHABLE_EFFECTS } from "./crushableCatalog.js";
 import {
   buildDynamicWeights,
+  buildTrailReuseWeights,
   getMaterialVisualTone,
   pickRandomItemType,
   pickRandomTheme,
@@ -272,7 +273,7 @@ export class BubbleManager {
     const sceneIndex = Math.floor(
       (performance.now() % this.sceneCycleMs) / this.sceneCycleMs * 4,
     ) % 4;
-    const weights = buildDynamicWeights({
+    const weights = buildTrailReuseWeights({
       items: pool,
       materialByType,
       recentTypes: this.recentItemTypes,
@@ -332,7 +333,6 @@ export class BubbleManager {
       materialCounts: this.getMaterialCounts(),
       visualToneCounts: this.getVisualToneCounts(),
       roundPhase: this.getRoundPhase(),
-      cyberEligible: !this.currentRoundHadCyber,
     });
     return pickTrailItemType(this.roundFingerDraws, Math.random, weights) ?? "bubble";
   }
@@ -972,8 +972,12 @@ export class BubbleManager {
     const definition = ITEM_CATALOG[bubble.type];
     if (!definition) return;
     const signature = SIGNATURE_RELEASES[bubble.type];
-    const columns = signature && !this.reducedMotion ? 4 : 3;
-    const rows = signature && !this.reducedMotion ? 3 : 2;
+    const columns = this.reducedMotion
+      ? 3
+      : (signature ? 5 : 4) + Math.floor(Math.random() * 2);
+    const rows = this.reducedMotion
+      ? 2
+      : (signature ? 4 : 3) + Math.floor(Math.random() * 2);
     const width = bubble.radius * 2 * definition.aspect;
     const height = bubble.radius * 2;
     const fragmentWidth = width / columns;
@@ -981,66 +985,91 @@ export class BubbleManager {
     const texture = this.getItemTexture(definition.asset);
     const baseBornAt = performance.now() + 110;
     const heavyFamilies = ["ice", "candy", "ceramic", "nut", "shell", "space", "paper"];
+
+    const points = Array.from({ length: rows + 1 }, (_, row) =>
+      Array.from({ length: columns + 1 }, (_, column) => {
+        const edgeX = column === 0 || column === columns;
+        const edgeY = row === 0 || row === rows;
+        return {
+          x: -width / 2 + column * fragmentWidth
+            + (edgeX ? 0 : (Math.random() - 0.5) * fragmentWidth * 0.62),
+          y: -height / 2 + row * fragmentHeight
+            + (edgeY ? 0 : (Math.random() - 0.5) * fragmentHeight * 0.62),
+        };
+      }),
+    );
+
+    const spawnTriangle = (vertices, depthOffset) => {
+      const centerX = vertices.reduce((sum, point) => sum + point.x, 0) / 3;
+      const centerY = vertices.reduce((sum, point) => sum + point.y, 0) / 3;
+      const positions = [];
+      const uvs = [];
+      for (const point of vertices) {
+        positions.push(point.x - centerX, point.y - centerY, 0);
+        uvs.push(point.x / width + 0.5, point.y / height + 0.5);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.94,
+        alphaTest: 0.025,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const fragment = new THREE.Mesh(geometry, material);
+      fragment.position.set(
+        bubble.position.x + centerX,
+        bubble.position.y + centerY,
+        20 + depthOffset + Math.random() * 1.6,
+      );
+      const fromImpactX = fragment.position.x - (bubble.impact?.pointX ?? bubble.position.x);
+      const fromImpactY = fragment.position.y - (bubble.impact?.pointY ?? bubble.position.y);
+      const impactDistance = Math.hypot(fromImpactX, fromImpactY);
+      const angle = Math.atan2(fromImpactY, fromImpactX) + (Math.random() - 0.5) * 0.62;
+      const proximity = 1 - THREE.MathUtils.clamp(impactDistance / (bubble.radius * 2.2), 0, 1);
+      const speed = (signature ? 1.4 + Math.random() * 3.7 : 0.9 + Math.random() * 2.8)
+        * (0.68 + proximity * 0.82);
+      const heavy = heavyFamilies.includes(definition.materialFamily);
+      fragment.userData = {
+        burst: true,
+        imageFragment: true,
+        releaseBehavior: signature?.behavior ?? definition.effectProfile,
+        materialFamily: definition.materialFamily,
+        bornAt: baseBornAt + (1 - proximity) * 190 + Math.random() * 95,
+        life: heavy ? 5200 + Math.random() * 1800 : (signature?.duration ?? 900) + 420 + Math.random() * 320,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        spin: (Math.random() - 0.5) * 0.2,
+        flipX: (Math.random() - 0.5) * 0.24,
+        flipY: (Math.random() - 0.5) * 0.28,
+        driftPhase: Math.random() * Math.PI * 2,
+        heavy,
+        floorY: window.innerHeight - 22 - Math.random() * 48,
+        bounceCount: 0,
+        landed: false,
+        baseOpacity: 0.94,
+      };
+      this.scene.add(fragment);
+    };
+
     for (let row = 0; row < rows; row += 1) {
       for (let column = 0; column < columns; column += 1) {
-        const geometry = new THREE.PlaneGeometry(fragmentWidth * 1.035, fragmentHeight * 1.035);
-        const uv = geometry.attributes.uv;
-        const u0 = column / columns;
-        const u1 = (column + 1) / columns;
-        const v0 = row / rows;
-        const v1 = (row + 1) / rows;
-        for (let index = 0; index < uv.count; index += 1) {
-          uv.setXY(
-            index,
-            THREE.MathUtils.lerp(u0, u1, uv.getX(index)),
-            THREE.MathUtils.lerp(v0, v1, uv.getY(index)),
-          );
+        const bottomLeft = points[row][column];
+        const bottomRight = points[row][column + 1];
+        const topLeft = points[row + 1][column];
+        const topRight = points[row + 1][column + 1];
+        const depthOffset = (row + column) % 3;
+        if (Math.random() < 0.5) {
+          spawnTriangle([bottomLeft, bottomRight, topRight], depthOffset);
+          spawnTriangle([bottomLeft, topRight, topLeft], depthOffset);
+        } else {
+          spawnTriangle([bottomLeft, bottomRight, topLeft], depthOffset);
+          spawnTriangle([bottomRight, topRight, topLeft], depthOffset);
         }
-        uv.needsUpdate = true;
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          opacity: 0.94,
-          alphaTest: 0.025,
-          depthWrite: false,
-          side: THREE.DoubleSide,
-        });
-        const fragment = new THREE.Mesh(geometry, material);
-        const localX = (column + 0.5 - columns / 2) * fragmentWidth;
-        const localY = (row + 0.5 - rows / 2) * fragmentHeight;
-        fragment.position.set(
-          bubble.position.x + localX,
-          bubble.position.y + localY,
-          20 + ((row + column) % 3),
-        );
-        const fromImpactX = fragment.position.x - (bubble.impact?.pointX ?? bubble.position.x);
-        const fromImpactY = fragment.position.y - (bubble.impact?.pointY ?? bubble.position.y);
-        const impactDistance = Math.hypot(fromImpactX, fromImpactY);
-        const angle = Math.atan2(fromImpactY, fromImpactX) + (Math.random() - 0.5) * 0.34;
-        const proximity = 1 - THREE.MathUtils.clamp(impactDistance / (bubble.radius * 2.2), 0, 1);
-        const speed = (signature ? 1.5 + Math.random() * 3.2 : 1 + Math.random() * 2.3)
-          * (0.72 + proximity * 0.72);
-        const heavy = heavyFamilies.includes(definition.materialFamily);
-        fragment.userData = {
-          burst: true,
-          imageFragment: true,
-          releaseBehavior: signature?.behavior ?? definition.effectProfile,
-          materialFamily: definition.materialFamily,
-          bornAt: baseBornAt + (1 - proximity) * 170 + Math.random() * 55,
-          life: heavy ? 5200 + Math.random() * 1800 : (signature?.duration ?? 900) + 420 + Math.random() * 320,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          spin: (Math.random() - 0.5) * 0.13,
-          flipX: (Math.random() - 0.5) * 0.16,
-          flipY: (Math.random() - 0.5) * 0.2,
-          driftPhase: Math.random() * Math.PI * 2,
-          heavy,
-          floorY: window.innerHeight - 22 - Math.random() * 48,
-          bounceCount: 0,
-          landed: false,
-          baseOpacity: 0.94,
-        };
-        this.scene.add(fragment);
       }
     }
   }

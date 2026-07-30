@@ -11,11 +11,21 @@ const SCENE_MATERIALS = Object.freeze({
 
 const CRISP_MATERIALS = new Set(["ice", "candy", "ceramic", "bubblewrap", "crystal", "nut"]);
 const SOFT_MATERIALS = new Set([
-  "gummy", "cloud", "siliconeFoam", "waterGel", "naturalRelease", "inflatableVinyl",
+  "gummy",
+  "cloud",
+  "siliconeFoam",
+  "waterGel",
+  "naturalRelease",
+  "inflatableVinyl",
 ]);
 const HEAVY_MATERIALS = new Set(["ice", "candy", "ceramic", "nut", "shell", "space", "paper"]);
 const FLOATING_MATERIALS = new Set([
-  "cloud", "air", "inflatableVinyl", "naturalRelease", "botanical", "siliconeFoam",
+  "cloud",
+  "air",
+  "inflatableVinyl",
+  "naturalRelease",
+  "botanical",
+  "siliconeFoam",
 ]);
 const VISUAL_TONE_BY_MATERIAL = Object.freeze({
   ice: "cool",
@@ -80,41 +90,51 @@ export function buildDynamicWeights({
   const recentMaterialWindow = recentMaterials.slice(-3);
   const sceneMaterials = SCENE_MATERIALS[sceneId] ?? SCENE_MATERIALS.moonlight;
 
-  return Object.fromEntries(items.map((type) => {
-    const material = materialByType[type];
-    const visualTone = getMaterialVisualTone(material);
-    let weight = baseWeights[type] ?? 1;
-    const recentIndex = recentTypeWindow.lastIndexOf(type);
-    if (recentIndex >= 0) {
-      const age = recentTypeWindow.length - 1 - recentIndex;
-      weight *= age <= 1 ? 0.04 : age <= 3 ? 0.16 : 0.42;
-    }
-    const materialIndex = recentMaterialWindow.lastIndexOf(material);
-    if (material && materialIndex >= 0) {
-      const age = recentMaterialWindow.length - 1 - materialIndex;
-      weight *= age === 0 ? 0.32 : age === 1 ? 0.52 : 0.72;
-    }
-    if (sceneMaterials.has(material)) weight *= 1.55;
-    if (interactionEnergy > 0.65 && CRISP_MATERIALS.has(material)) weight *= 1.65;
-    if (interactionEnergy < 0.35 && SOFT_MATERIALS.has(material)) weight *= 1.65;
-    if (verticalRatio < 0.36 && FLOATING_MATERIALS.has(material)) weight *= 1.65;
-    if (verticalRatio < 0.36 && HEAVY_MATERIALS.has(material)) weight *= 0.58;
-    if (verticalRatio > 0.64 && HEAVY_MATERIALS.has(material)) weight *= 1.55;
-    if (verticalRatio > 0.64 && FLOATING_MATERIALS.has(material)) weight *= 0.68;
-    weight /= 1 + (materialCounts[material] ?? 0) * 0.34;
-    weight /= 1 + (visualToneCounts[visualTone] ?? 0) * 0.14;
-    if (roundPhase === "opening" && SOFT_MATERIALS.has(material)) weight *= 1.5;
-    if (roundPhase === "contrast" && material !== recentMaterialWindow.at(-1)) weight *= 1.45;
-    if (roundPhase === "settle" && (SOFT_MATERIALS.has(material) || material === "naturalRelease")) {
-      weight *= 1.55;
-    }
-    if (focusPending && type === focusType) weight *= 4.8;
-    if (type === "cyberChicken") {
-      if (!cyberEligible) weight = 0;
-      else if (drawsSinceCyber >= 18) weight *= Math.min(4, 1 + (drawsSinceCyber - 17) * 0.3);
-    }
-    return [type, Math.max(0, weight)];
-  }));
+  return Object.fromEntries(
+    items.map((type) => {
+      const material = materialByType[type];
+      const visualTone = getMaterialVisualTone(material);
+      let weight = baseWeights[type] ?? 1;
+      const recentIndex = recentTypeWindow.lastIndexOf(type);
+      if (recentIndex >= 0) {
+        const age = recentTypeWindow.length - 1 - recentIndex;
+        weight *= age <= 1 ? 0.04 : age <= 3 ? 0.16 : 0.42;
+      }
+      const materialIndex = recentMaterialWindow.lastIndexOf(material);
+      if (material && materialIndex >= 0) {
+        const age = recentMaterialWindow.length - 1 - materialIndex;
+        weight *= age === 0 ? 0.32 : age === 1 ? 0.52 : 0.72;
+      }
+      if (sceneMaterials.has(material)) weight *= 1.55;
+      if (interactionEnergy > 0.65 && CRISP_MATERIALS.has(material)) weight *= 1.65;
+      if (interactionEnergy < 0.35 && SOFT_MATERIALS.has(material)) weight *= 1.65;
+      if (verticalRatio < 0.36 && FLOATING_MATERIALS.has(material)) weight *= 1.65;
+      if (verticalRatio < 0.36 && HEAVY_MATERIALS.has(material)) weight *= 0.58;
+      if (verticalRatio > 0.64 && HEAVY_MATERIALS.has(material)) weight *= 1.55;
+      if (verticalRatio > 0.64 && FLOATING_MATERIALS.has(material)) weight *= 0.68;
+      weight /= 1 + (materialCounts[material] ?? 0) * 0.34;
+      weight /= 1 + (visualToneCounts[visualTone] ?? 0) * 0.14;
+      if (roundPhase === "opening" && SOFT_MATERIALS.has(material)) weight *= 1.5;
+      if (roundPhase === "contrast" && material !== recentMaterialWindow.at(-1)) weight *= 1.45;
+      if (roundPhase === "settle" && (SOFT_MATERIALS.has(material) || material === "naturalRelease")) {
+        weight *= 1.55;
+      }
+      if (focusPending && type === focusType) weight *= 4.8;
+      if (type === "cyberChicken") {
+        if (!cyberEligible) weight = 0;
+        else if (drawsSinceCyber >= 18) weight *= Math.min(4, 1 + (drawsSinceCyber - 17) * 0.3);
+      }
+      return [type, Math.max(0, weight)];
+    }),
+  );
+}
+
+export function buildTrailReuseWeights(options) {
+  const weights = buildDynamicWeights({ ...options, cyberEligible: true });
+  if (options.items?.includes("cyberChicken")) {
+    weights.cyberChicken = Math.max(weights.cyberChicken ?? 0, ITEM_DRAW_WEIGHTS.cyberChicken);
+  }
+  return weights;
 }
 
 export function pickRandomItemType({
