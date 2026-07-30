@@ -231,8 +231,55 @@ export class AudioManager {
     oscillator.stop(now + duration + 0.02);
   }
 
+  rubberDuckSqueak() {
+    const now = this.ctx.currentTime;
+    const squeak = this.ctx.createOscillator();
+    const resonance = this.ctx.createBiquadFilter();
+    const output = this.ctx.createGain();
+    const wobble = this.ctx.createOscillator();
+    const wobbleDepth = this.ctx.createGain();
+
+    squeak.type = "sawtooth";
+    squeak.frequency.setValueAtTime(980, now);
+    squeak.frequency.exponentialRampToValueAtTime(610, now + 0.055);
+    squeak.frequency.exponentialRampToValueAtTime(760, now + 0.115);
+    squeak.frequency.exponentialRampToValueAtTime(390, now + 0.25);
+
+    wobble.type = "sine";
+    wobble.frequency.setValueAtTime(28, now);
+    wobbleDepth.gain.setValueAtTime(46, now);
+    wobbleDepth.gain.exponentialRampToValueAtTime(8, now + 0.24);
+    wobble.connect(wobbleDepth).connect(squeak.frequency);
+
+    resonance.type = "bandpass";
+    resonance.frequency.setValueAtTime(1450, now);
+    resonance.frequency.exponentialRampToValueAtTime(820, now + 0.25);
+    resonance.Q.value = 3.8;
+
+    output.gain.setValueAtTime(0.0001, now);
+    output.gain.exponentialRampToValueAtTime(this.popVolume * 0.38, now + 0.012);
+    output.gain.setValueAtTime(this.popVolume * 0.3, now + 0.075);
+    output.gain.exponentialRampToValueAtTime(this.popVolume * 0.18, now + 0.14);
+    output.gain.exponentialRampToValueAtTime(0.0001, now + 0.27);
+
+    squeak.connect(resonance).connect(output).connect(this.ctx.destination);
+    squeak.start(now);
+    wobble.start(now);
+    squeak.stop(now + 0.29);
+    wobble.stop(now + 0.29);
+
+    window.setTimeout(
+      () => this.sweep(540, 720, 0.075, 0.065, "sine"),
+      112,
+    );
+  }
+
   pop(type = "bubble") {
     if (!this.ctx || !this.enabled || this.ctx.state !== "running") return;
+    if (type === "duck") {
+      this.rubberDuckSqueak();
+      return;
+    }
     const crispness = this.interactionEnergy;
     if (crispness > 0.68) {
       this.tone(1100 + crispness * 520, 0.045, this.popVolume * 0.025, "sine");
@@ -318,14 +365,13 @@ export class AudioManager {
       this.sweep(tonalLayer[0], tonalLayer[1], 0.22, 0.11, crushableGroup === "nut" ? "triangle" : "sine");
       return;
     }
-    if (["duck", "pufferfish", "seal", "unicornFloat", "pressureHippo"].includes(type)) {
+    if (["pufferfish", "seal", "unicornFloat", "pressureHippo"].includes(type)) {
       const deflatePitch = {
-        duck: 520, pufferfish: 410, seal: 330, unicornFloat: 620, pressureHippo: 220,
+        pufferfish: 410, seal: 330, unicornFloat: 620, pressureHippo: 220,
       }[type];
       const deflateLength = type === "pressureHippo" ? 0.48 : type === "unicornFloat" ? 0.4 : 0.3;
       this.noiseBurst({ duration: deflateLength, frequency: 760 + deflatePitch, gain: 0.22, filterType: "bandpass" });
       this.sweep(deflatePitch, type === "pressureHippo" ? 42 : 72, deflateLength, 0.24, "sine");
-      if (type === "duck") window.setTimeout(() => this.tone(760, 0.08, this.popVolume * 0.12, "sine"), 70);
       return;
     }
     if (type === "mouse") {
