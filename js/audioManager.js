@@ -14,9 +14,9 @@ export class AudioManager {
     this.enabled = false;
     this.interactionEnergy = 0.5;
     this.musicTracks = [
+      "./assets/music/bgm_cute_talking_chiptune.mp3",
       "./assets/music/bgm_upbeat_healing_starlight_city_loop.ogg",
       "./assets/music/bgm_bright_melodic_loopy_edm.ogg",
-      "./assets/music/bgm_bright_melodic_edm.ogg",
       "./assets/music/bgm_relaxing_ambient_loop.ogg",
       "./assets/music/bgm_kpop_bright_stars_loop.ogg",
     ];

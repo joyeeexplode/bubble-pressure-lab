@@ -12,7 +12,7 @@
     "start": "assets/audio/start.wav"
   },
   "music": {
-    "background": "assets/music/bgm_bright_melodic_edm.ogg",
+    "background": "assets/music/bgm_cute_talking_chiptune.mp3",
     "menuLoop": "assets/music/bgm_bright_melodic_loopy_edm.ogg",
     "levelLoop": "assets/music/bgm_bright_melodic_loopy_edm.ogg",
     "upbeatHealing": "assets/music/bgm_upbeat_healing_starlight_city_loop.ogg",
