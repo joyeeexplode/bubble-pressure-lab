@@ -7,10 +7,10 @@ export const STATES = Object.freeze({
 });
 
 export const PROMPTS = Object.freeze({
-  [STATES.WAIT_FIST]: "双手握拳，唤醒泡泡",
-  [STATES.FINGER_BUBBLES]: "伸出更多手指",
-  [STATES.PALM_TRAIL]: "挥动手掌，铺开压力",
-  [STATES.PINCH_POP]: "捏破元素，释放压力",
+  [STATES.WAIT_FIST]: "请双手握拳开始",
+  [STATES.FINGER_BUBBLES]: "伸出手指召唤随机解压玩具",
+  [STATES.PALM_TRAIL]: "挥动手掌铺开随机解压元素",
+  [STATES.PINCH_POP]: "捏破 95% 的元素即可通关",
   [STATES.RESET]: "正在清理，准备下一轮",
 });
 

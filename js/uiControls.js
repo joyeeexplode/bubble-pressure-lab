@@ -8,7 +8,6 @@ export class UIControls {
     onPrimaryStart,
     onRetry,
     onErrorTouch,
-    onNextRound,
   }) {
     const defaults = {
       bubbleSize: 1.44,
@@ -30,13 +29,6 @@ export class UIControls {
     this.retryButton = document.querySelector("#retryButton");
     this.errorTouchButton = document.querySelector("#errorTouchButton");
     this.performanceHint = document.querySelector("#performanceHint");
-    this.loadingStatus = document.querySelector("#loadingStatus");
-    this.gestureGuide = document.querySelector("#gestureGuide");
-    this.roundResult = document.querySelector("#roundResult");
-    this.resultHeadline = document.querySelector("#resultHeadline");
-    this.resultDetail = document.querySelector("#resultDetail");
-    this.shareResultButton = document.querySelector("#shareResult");
-    this.nextRoundButton = document.querySelector("#nextRound");
     this.pauseBtn = document.querySelector("#pauseToggle");
     this.soundBtn = document.querySelector("#soundToggle");
     this.touchBtn = document.querySelector("#touchToggle");
@@ -131,8 +123,6 @@ export class UIControls {
 
     this.retryButton.addEventListener("click", () => onRetry?.());
     this.errorTouchButton.addEventListener("click", () => onErrorTouch?.());
-    this.nextRoundButton.addEventListener("click", () => onNextRound?.());
-    this.shareResultButton.addEventListener("click", () => this.shareRoundResult());
   }
 
   setPrompt(text) {
@@ -142,59 +132,6 @@ export class UIControls {
       card.classList.remove("stage-flash");
       void card.offsetWidth;
       card.classList.add("stage-flash");
-    }
-  }
-
-  setGestureGuide(state) {
-    if (!this.gestureGuide) return;
-    this.gestureGuide.dataset.state = state.toLowerCase();
-    this.gestureGuide.hidden = state === "PINCH_POP" || state === "RESET";
-  }
-
-  setTextureProgress({ loaded, total, failed }) {
-    if (!this.loadingStatus || !total) return;
-    if (loaded >= total) {
-      this.loadingStatus.textContent = failed ? `素材已就绪 · ${failed} 项使用柔和占位` : "素材已就绪";
-      window.clearTimeout(this.loadingStatusTimer);
-      this.loadingStatusTimer = window.setTimeout(() => {
-        this.loadingStatus.hidden = true;
-      }, 1500);
-      return;
-    }
-    this.loadingStatus.hidden = false;
-    this.loadingStatus.textContent = `正在准备素材 ${loaded}/${total}`;
-  }
-
-  showRoundResult(result) {
-    this.currentRoundResult = result;
-    this.resultHeadline.textContent = result.headline;
-    this.resultDetail.textContent = result.detail;
-    this.roundResult.hidden = false;
-  }
-
-  hideRoundResult() {
-    this.roundResult.hidden = true;
-    this.currentRoundResult = null;
-  }
-
-  async shareRoundResult() {
-    if (!this.currentRoundResult) return;
-    const shareData = {
-      title: "泡泡解压实验室",
-      text: this.currentRoundResult.shareText,
-      url: window.location.href,
-    };
-    try {
-      if (navigator.share) await navigator.share(shareData);
-      else {
-        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-        this.shareResultButton.textContent = "已复制";
-        window.setTimeout(() => {
-          this.shareResultButton.textContent = "分享结果";
-        }, 1500);
-      }
-    } catch (error) {
-      if (error?.name !== "AbortError") this.shareResultButton.textContent = "分享失败";
     }
   }
 
