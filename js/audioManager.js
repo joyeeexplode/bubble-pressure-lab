@@ -19,6 +19,7 @@ export class AudioManager {
       "./assets/music/bgm_bright_melodic_loopy_edm.ogg",
       "./assets/music/bgm_relaxing_ambient_loop.ogg",
       "./assets/music/bgm_kpop_bright_stars_loop.ogg",
+      "./assets/music/bgm_cyberpunk_moonlight_sonata.mp3",
     ];
     this.chords = [
       [110, 164.81, 220],
